@@ -1,55 +1,49 @@
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
-
+from typing import Dict, Any
 from slack_bolt.async_app import AsyncAck
-from slack_bolt.request.async_request import AsyncBoltRequest
 
 from ...log.logger import get_logger
+from ...application.usecase.answer_to_user_request_usecase import AnswerToUserRequestUseCase
+from ..mapper.slack_request_mapper import SlackRequestMapper
 
 logger = get_logger(__name__)
 
-@dataclass
-class SlackMessageRequest:
-    event_id: str
-    bot_id: Optional[str]
-    user_id: str
-    channel_id: str
-    message_ts: str
-    thread_ts: str
-    text: str
-
-    @classmethod
-    def from_event(cls, request: Dict[str, Any]) -> "SlackMessageRequest":
-        event = request.get('event', {})
-
-        return cls(
-            event_id=event.get('event_id'),
-            bot_id=event.get('bot_id'),
-            user_id=event.get('user_id', ''),
-            channel_id=event.get('channel_id', ''),
-            message_ts=event.get('ts', ''),
-            thread_ts=event.get('thread_ts', event.get('ts', '')),
-            text=event.get('text', '')
-        )
-
-    def is_bot_message(self) -> bool:
-        return bool(self.bot_id)
 
 class MessageController:
-    def __init__(self, use_case=None):
-        self.use_case = use_case
-        self.processed_events = set()
+    def __init__(self, use_case: AnswerToUserRequestUseCase):
+        self._use_case = use_case
+        self._processed_events = set()
 
-    async def exec(self, ack: AsyncAck, request: AsyncBoltRequest) -> Optional[str]:
-        slack_massage_request = SlackMessageRequest.from_event(request.body)
+    async def exec(self, ack: AsyncAck, body: Dict[str, Any], say) -> None:
+        """Slackのメッセージイベントを処理"""
+        await ack()
 
-        if slack_massage_request.event_id in self.processed_events:
-            logger.info(f"重複したイベントをスキップしました。: {slack_massage_request.event_id}")
+        event = body.get('event', {})
+        slack_dto = SlackRequestMapper.from_event(event)
+
+        if slack_dto.event_id in self._processed_events:
+            logger.info(f"重複したイベントをスキップしました: {slack_dto.event_id}")
             return
-        self.processed_events.add(slack_massage_request.event_id)
+        self._processed_events.add(slack_dto.event_id)
 
-        if slack_massage_request.is_bot_message():
-            logger.info("botメッセージを無視します。")
+        if SlackRequestMapper.is_bot_message(slack_dto):
+            logger.info("ボットメッセージを無視します")
             return
 
-        self.use_case.exec()
+        if not self._use_case:
+            logger.warning("ユースケースが設定されていません")
+            return
+
+        try:
+            input_dto = SlackRequestMapper.to_application_input(slack_dto)
+            output_dto = await self._use_case.execute(input_dto)
+
+            await say(
+                text=output_dto.answer,
+                thread_ts=slack_dto.thread_ts or slack_dto.message_ts
+            )
+        except Exception as e:
+            logger.error(f"メッセージ処理でエラーが発生しました: {e}")
+            await say(
+                text="申し訳ありません。エラーが発生しました。",
+                thread_ts=slack_dto.thread_ts or slack_dto.message_ts
+            )

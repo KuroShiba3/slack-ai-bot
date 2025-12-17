@@ -1,2 +1,1 @@
-from .controllers.mention_controller import MentionController
 from .controllers.message_controller import MessageController
