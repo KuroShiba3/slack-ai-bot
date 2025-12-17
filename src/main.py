@@ -4,15 +4,15 @@ import uvicorn
 from fastapi import FastAPI
 
 from .infrastructure.slack.slack_adapter import SlackAdapter
-from .presentation import MentionController, MessageController
+from .presentation import MessageController
 
 
 ENV = os.getenv("ENV", "local")
 
 slack_adapter = SlackAdapter()
-mention_controller = MentionController()
 message_controller = MessageController()
-slack_adapter.register_handler("app_mention", mention_controller.exec)
+# app_mentionとmessageイベントの両方を同じコントローラーで処理
+slack_adapter.register_handler("app_mention", message_controller.exec)
 slack_adapter.register_handler("message", message_controller.exec)
 
 fastapi_app = FastAPI()
