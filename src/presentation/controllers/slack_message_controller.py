@@ -7,25 +7,29 @@ from ..mapper.slack_request_mapper import SlackRequestMapper
 
 logger = get_logger(__name__)
 
-
-class MessageController:
-    def __init__(self, use_case: AnswerToUserRequestUseCase):
+class SlackMessageController:
+    def __init__(
+        self,
+        use_case: AnswerToUserRequestUseCase,
+        mapper: SlackRequestMapper
+    ):
         self._use_case = use_case
+        self._mapper = mapper
         self._processed_events = set()
 
-    async def exec(self, ack: AsyncAck, body: Dict[str, Any], say) -> None:
+    async def execute(self, ack: AsyncAck, body: Dict[str, Any], say) -> None:
         """Slackのメッセージイベントを処理"""
         await ack()
 
         event = body.get('event', {})
-        slack_dto = SlackRequestMapper.from_event(event)
+        slack_dto = self._mapper.from_event(event)
 
         if slack_dto.event_id in self._processed_events:
             logger.info(f"重複したイベントをスキップしました: {slack_dto.event_id}")
             return
         self._processed_events.add(slack_dto.event_id)
 
-        if SlackRequestMapper.is_bot_message(slack_dto):
+        if self._mapper.is_bot_message(slack_dto):
             logger.info("ボットメッセージを無視します")
             return
 
@@ -34,7 +38,7 @@ class MessageController:
             return
 
         try:
-            input_dto = SlackRequestMapper.to_application_input(slack_dto)
+            input_dto = self._mapper.to_application_input(slack_dto)
             output_dto = await self._use_case.execute(input_dto)
 
             await say(
