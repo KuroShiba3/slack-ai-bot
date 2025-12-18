@@ -1,11 +1,13 @@
 import os
-from typing import Callable
-from slack_bolt.app.async_app import AsyncApp
-from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
-from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
-from fastapi import FastAPI, Request
+from collections.abc import Callable
 
-from ...config import SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, SLACK_APP_TOKEN
+from fastapi import FastAPI, Request
+from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
+from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
+from slack_bolt.app.async_app import AsyncApp
+
+from ...config import SLACK_APP_TOKEN, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET
+
 
 class SlackAdapter:
     def __init__(self):
@@ -36,9 +38,8 @@ class SlackAdapter:
         if not SLACK_BOT_TOKEN or not SLACK_SIGNING_SECRET:
             raise ValueError("環境変数 SLACK_BOT_TOKEN または SLACK_SIGNING_SECRET が設定されていません。")
 
-        app = AsyncApp(
+        return AsyncApp(
             token=SLACK_BOT_TOKEN,
             signing_secret=SLACK_SIGNING_SECRET
         )
 
-        return app

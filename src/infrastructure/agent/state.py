@@ -1,6 +1,7 @@
-from typing import Annotated, Optional, TypedDict
+from typing import Annotated, TypedDict
 
 from langgraph.graph.message import AnyMessage, add_messages
+
 
 class SlackContext(TypedDict):
     channel_id: str
@@ -14,7 +15,7 @@ class Task(TypedDict):
     task_result: str
 
 def update_task(existing: list[Task], new: list[Task]) -> list[Task]:
-    """タスクリストを更新（新しいタスクで既存のタスクを置き換える）"""
+    """タスクリストを更新(新しいタスクで既存のタスクを置き換える)"""
     if not new:
         return existing
 
@@ -33,6 +34,6 @@ class BaseState(TypedDict, total=False):
     messages: Annotated[list[AnyMessage], add_messages]
     slack_context: SlackContext
     tasks: Annotated[list[Task], update_task]
-    final_answer: Optional[str]
-    user_message_id: Optional[str]
-    ai_message_id: Optional[str]
+    final_answer: str | None
+    user_message_id: str | None
+    ai_message_id: str | None

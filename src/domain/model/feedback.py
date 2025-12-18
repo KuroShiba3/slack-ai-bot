@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
+
 class Feedback:
     def __init__(self, id: UUID, user_id: str, message_id: UUID, feedback: bool, created_at: datetime, updated_at: datetime):
         self._id = id

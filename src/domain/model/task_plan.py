@@ -1,14 +1,14 @@
 from uuid import UUID, uuid4
-from typing import List
 
 from .task import Task, TaskStatus
+
 
 class TaskPlan:
     def __init__(
         self,
         id: UUID,
         message_id: UUID,
-        tasks: List[Task],
+        tasks: list[Task],
     ):
         if not tasks:
             raise ValueError("タスクが空です。")
@@ -18,7 +18,7 @@ class TaskPlan:
         self._tasks = tasks
 
     @classmethod
-    def create(cls, message_id: UUID, tasks: List[Task]) -> "TaskPlan":
+    def create(cls, message_id: UUID, tasks: list[Task]) -> "TaskPlan":
         return cls(
             id=uuid4(),
             message_id=message_id,
@@ -34,17 +34,17 @@ class TaskPlan:
         return self._message_id
 
     @property
-    def tasks(self) -> List[Task]:
+    def tasks(self) -> list[Task]:
         return self._tasks
 
-    def get_incomplete_tasks(self) -> List[Task]:
+    def get_incomplete_tasks(self) -> list[Task]:
         """未完了のタスクを取得"""
         return [
             task for task in self._tasks
             if task.status != TaskStatus.COMPLETED
         ]
 
-    def get_completed_tasks(self) -> List[Task]:
+    def get_completed_tasks(self) -> list[Task]:
         """完了済みタスクを取得"""
         return [
             task for task in self._tasks
@@ -58,7 +58,7 @@ class TaskPlan:
             for task in self._tasks
         )
 
-    def get_task_results(self) -> List[str]:
+    def get_task_results(self) -> list[str]:
         """完了したタスクの結果を取得"""
         results = []
         for task in self.get_completed_tasks():

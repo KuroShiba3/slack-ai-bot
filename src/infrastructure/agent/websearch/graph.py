@@ -3,8 +3,8 @@ from langgraph.graph import START, StateGraph
 from .nodes import (
     evaluate_task_result,
     execute_search,
-    generate_task_result,
     generate_search_queries,
+    generate_task_result,
 )
 from .state import WebSearchState
 

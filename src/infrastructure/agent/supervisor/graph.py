@@ -1,7 +1,12 @@
 from langgraph.graph import START, StateGraph
 
 from ...state.state import BaseState
-from .nodes import decide_response_method, generate_direct_answer, generate_final_answer, plan_tasks
+from .nodes import (
+    decide_response_method,
+    generate_direct_answer,
+    generate_final_answer,
+    plan_tasks,
+)
 
 supervisor_graph = StateGraph(BaseState)
 supervisor_graph.add_node(decide_response_method)

@@ -2,6 +2,7 @@ from abc import ABC
 from datetime import datetime
 from typing import Any
 
+
 class TaskLog(ABC):
     def __init__(self):
         self._retry_count = 0

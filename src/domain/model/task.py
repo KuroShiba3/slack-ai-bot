@@ -1,8 +1,9 @@
+from datetime import datetime
 from enum import Enum
 from uuid import UUID, uuid4
-from datetime import datetime
 
 from .task_log import TaskLog
+
 
 class AgentName(Enum):
     WEB_SEARCH = "web_search"
@@ -110,7 +111,7 @@ class Task:
         return self._task_log
 
     def set_task_log(self, task_log: TaskLog) -> None:
-        """作業ログを設定（エージェントが作業開始時に設定）"""
+        """作業ログを設定(エージェントが作業開始時に設定)"""
         if self._task_log is not None:
             raise ValueError("作業ログは既に設定されています")
         self._task_log = task_log

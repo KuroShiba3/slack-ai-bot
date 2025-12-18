@@ -1,11 +1,12 @@
 import asyncio
-from typing import Dict, Any
+from typing import Any
+
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
-from ...domain.service.agent_workflow_service import AgentWorkflowService
-from ...domain.model.final_answer import FinalAnswer
 from ...config import POSTGRES_URL
+from ...domain.model.final_answer import FinalAnswer
+from ...domain.service.agent_workflow_service import AgentWorkflowService
 from ...log.logger import get_logger
 
 logger = get_logger(__name__)
@@ -80,7 +81,7 @@ class LangGraphWorkflowService(AgentWorkflowService):
                     cls._graph = await cls._build_graph()
         return cls._graph
 
-    async def execute(self, user_message: str, context: Dict[str, Any]) -> FinalAnswer:
+    async def execute(self, user_message: str, context: dict[str, Any]) -> FinalAnswer:
         async with self._graph_semaphore:
             try:
                 graph = await self._get_graph()

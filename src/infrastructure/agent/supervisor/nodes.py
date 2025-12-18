@@ -11,15 +11,14 @@ from langgraph.graph import END
 from langgraph.types import Command, Send
 from pydantic import BaseModel, Field
 
-from ...config.model import get_model, get_embedding_model
+from ...config.model import get_embedding_model, get_model
+from ...db.client import DatabaseClient
+from ...db.models import ConversationSession, Message, Task
+from ...slack.actions import add_slack_reaction
 from ...state.state import BaseState
 from ...utils.error import send_error_to_slack
 from ...utils.logger import get_logger
-from ...slack.actions import add_slack_reaction
-from ...db.client import DatabaseClient
-from ...db.models import ConversationSession, Message, Task
 from .utils import normalize_ai_messages
-
 
 logger = get_logger(__name__)
 
@@ -50,7 +49,7 @@ async def decide_response_method(state: BaseState) -> Command:
                 # メッセージ内容
                 message_content = messages[-1].content
 
-                # エンベディング生成（humanメッセージの場合のみ）
+                # エンベディング生成(humanメッセージの場合のみ)
                 embedding = None
                 try:
                     embedding_model = get_embedding_model()
@@ -89,14 +88,14 @@ async def decide_response_method(state: BaseState) -> Command:
 
 ## システムアーキテクチャの理解:
 このシステムは以下の段階で動作します:
-1. **処理方法の判断（あなたの役割）**: ユーザーのリクエストを分析し、直接回答するか、専門エージェントに依頼するかを決定
+1. **処理方法の判断(あなたの役割)**: ユーザーのリクエストを分析し、直接回答するか、専門エージェントに依頼するかを決定
 2. **タスク計画**: 専門エージェントが必要な場合、リクエストを複数のタスクに分割し、各タスクを適切なエージェントに割り当てる
-3. **タスク実行**: 各エージェント（general、regulation）が割り当てられたタスクを並列実行し、検索や情報収集を行って結果を返す
+3. **タスク実行**: 各エージェント(general、regulation)が割り当てられたタスクを並列実行し、検索や情報収集を行って結果を返す
 4. **回答生成**: すべてのタスク結果を統合してユーザーに最終回答を提示
 
 **あなたの役割**:
-- 学習済み知識だけで答えられる質問 → 直接回答（ステップ2-4をスキップ）
-- 検索や外部情報が必要な質問 → 専門エージェントに依頼（ステップ2-4を実行）
+- 学習済み知識だけで答えられる質問 → 直接回答(ステップ2-4をスキップ)
+- 検索や外部情報が必要な質問 → 専門エージェントに依頼(ステップ2-4を実行)
 
 ## 判断基準
 
@@ -112,7 +111,7 @@ async def decide_response_method(state: BaseState) -> Command:
 
 ### 専門エージェントが必要な場合 (`can_answer_directly: false`)
 
-以下の場合は専門エージェント（websearch、regulation）に依頼が必要です:
+以下の場合は専門エージェント(websearch、regulation)に依頼が必要です:
 
 - **Web検索が必要**: 今日の天気、最新ニュース、株価、現在の状況、特定のサイト情報、具体的な製品情報など
 - **社内規定が必要**: 就業規則、有給休暇、経費ルール、ガイドラインなど
@@ -124,7 +123,7 @@ async def decide_response_method(state: BaseState) -> Command:
     )
 
     normalized_messages = normalize_ai_messages(state["messages"])
-    messages = [system_message] + normalized_messages
+    messages = [system_message, *normalized_messages]
 
     try:
         model = get_model()
@@ -150,7 +149,7 @@ async def decide_response_method(state: BaseState) -> Command:
         )
 
     except Exception as e:
-        logger.error(f"decide_response_methodでエラーが発生しました: {str(e)}", exc_info=True)
+        logger.error(f"decide_response_methodでエラーが発生しました: {e!s}", exc_info=True)
         raise
 
 
@@ -177,16 +176,16 @@ async def generate_direct_answer(state: BaseState) -> Command:
 ## Slack mrkdwn形式:
 - 太字: `*テキスト*` の形式で囲む
 - 箇条書き: 各行の先頭に `• ` を使用
-- 見出し記号（`#`, `##`, `###`）は使用しない
+- 見出し記号(`#`, `##`, `###`)は使用しない
 
 ## 制約:
-- 学習済み知識（2025年1月まで）の範囲内で回答してください
+- 学習済み知識(2025年1月まで)の範囲内で回答してください
 - 最新情報が必要な場合や不確実な情報は推測せず、素直にその旨を伝えてください
 - 「BRANU株式会社の社内アシスタントAIです」のような自己紹介は回答に含めないでください
 """
     )
 
-    messages = [system_message] + normalized_messages
+    messages = [system_message, *normalized_messages]
 
     try:
         model = get_model()
@@ -225,7 +224,7 @@ async def generate_direct_answer(state: BaseState) -> Command:
         )
 
     except Exception as e:
-        logger.error(f"generate_direct_answerでエラーが発生しました: {str(e)}", exc_info=True)
+        logger.error(f"generate_direct_answerでエラーが発生しました: {e!s}", exc_info=True)
         raise
 
 
@@ -243,7 +242,7 @@ async def plan_tasks(state: BaseState) -> Command:
         next_agent: Literal["websearch", "regulation"] = Field(description="処理するエージェント")
 
     class TaskPlan(BaseModel):
-        tasks: list[_Task] = Field(description="実行するタスクのリスト（最低1つ以上）")
+        tasks: list[_Task] = Field(description="実行するタスクのリスト(最低1つ以上)")
         reason: str = Field(description="タスク分割の戦略と根拠を説明してください。")
 
     system_message = SystemMessage(
@@ -252,7 +251,7 @@ async def plan_tasks(state: BaseState) -> Command:
 
 ## システムアーキテクチャの理解:
 このシステムは以下の3段階で動作します:
-1. **タスク計画（あなたの役割）**: ユーザーのリクエストを複数のタスクに分割し、各タスクを適切なエージェントに割り当てる
+1. **タスク計画(あなたの役割)**: ユーザーのリクエストを複数のタスクに分割し、各タスクを適切なエージェントに割り当てる
 2. **タスク実行**: 各エージェントが割り当てられたタスクを並列実行し、検索や情報収集を行って結果を返す
 3. **回答生成**: すべてのタスク結果を統合してユーザーに最終回答を提示
 
@@ -274,7 +273,7 @@ async def plan_tasks(state: BaseState) -> Command:
     - Vertex AI Search (Grounding機能付き) で社内規定を検索
     - 就業規則、有給休暇、経費ルール、各種ガイドラインなど社内文書を検索
     - 最大2個の検索クエリを生成し、複数の角度から規定を検索
-    - 検索結果には出典情報（規定ファイル名、該当箇所のスニペット）が自動的に付与される
+    - 検索結果には出典情報(規定ファイル名、該当箇所のスニペット)が自動的に付与される
     - 複数の検索結果を統合し、矛盾がある場合は両方の情報を提示
     - 検索結果の評価を行い、必要に応じて検索クエリを改善して再検索
     - 社内規定、会社のポリシー、内部ルールに関する質問に最適
@@ -287,7 +286,7 @@ async def plan_tasks(state: BaseState) -> Command:
 
 ### 基本方針
 - **並列実行を活用**: 複数のエージェントが同時に実行できるため、独立したタスクは分割してください
-- **検索の効率化**: 異なる対象（場所、期間、項目など）は別々のタスクにすることで、検索精度が向上します
+- **検索の効率化**: 異なる対象(場所、期間、項目など)は別々のタスクにすることで、検索精度が向上します
 
 ### 必須要件
 
@@ -311,7 +310,7 @@ async def plan_tasks(state: BaseState) -> Command:
 """    )
 
     normalized_messages = normalize_ai_messages(state["messages"])
-    messages = [system_message] + normalized_messages
+    messages = [system_message, *normalized_messages]
 
     try:
         model = get_model("gemini-2.5-flash")
@@ -320,7 +319,7 @@ async def plan_tasks(state: BaseState) -> Command:
         )
 
         if not plan.tasks:
-            # 念のため（通常は来ないはず）
+            # 念のため(通常は来ないはず)
             logger.error("plan_tasksでtasksが空です")
             await send_error_to_slack(state, "エラーが発生しました。新しいスレッドで再度お試しください。")
             return Command(goto=END)
@@ -393,7 +392,7 @@ async def plan_tasks(state: BaseState) -> Command:
             goto=sends
         )
     except Exception as e:
-        logger.error(f"plan_tasksでエラーが発生しました: {str(e)}", exc_info=True)
+        logger.error(f"plan_tasksでエラーが発生しました: {e!s}", exc_info=True)
         raise
 
 async def generate_final_answer(state: BaseState) -> Command:
@@ -442,7 +441,7 @@ async def generate_final_answer(state: BaseState) -> Command:
     - 質問の範囲内で重要な情報を過不足なく提供する
     - 関連する重要な注意事項や制限事項は簡潔に含める
     - ただし、質問されていない詳細な手続きや補足情報は省略する
-    - 見出しは最小限にし、1レベルまでに抑える（サブセクション「###」は使用しない）
+    - 見出しは最小限にし、1レベルまでに抑える(サブセクション「###」は使用しない)
 
 3. **わかりやすさ**:
     - 簡潔で分かりやすい日本語で記述
@@ -453,46 +452,46 @@ async def generate_final_answer(state: BaseState) -> Command:
     - タスク結果の全ての情報を含めるのではなく、質問に関連する重要な情報のみを選択する
     - 矛盾がある場合は両方の情報を提示し、違いを明確にする
 
-5. **Slack mrkdwn形式（厳守）**:
-    - Slackのmrkdwn形式を使用（標準Markdownとは異なる）
+5. **Slack mrkdwn形式(厳守)**:
+    - Slackのmrkdwn形式を使用(標準Markdownとは異なる)
     - 太字: `*テキスト*` の形式で囲む
     - 箇条書き: 各行の先頭に `• ` を使用
-    - ネストした箇条書きは2階層まで使用可能（1階層目: `• `、2階層目: `    • `でインデント）
-    - 見出し記号（`#`, `##`, `###`）は使用しない
-    - 水平線（`---`）は使用しない
+    - ネストした箇条書きは2階層まで使用可能(1階層目: `• `、2階層目: `    • `でインデント)
+    - 見出し記号(`#`, `##`, `###`)は使用しない
+    - 水平線(`---`)は使用しない
     - セクション分けは空行と太字テキストで表現する
 
-6. **情報源の記載形式（必須）**:
+6. **情報源の記載形式(必須)**:
     - **【最重要】URLやファイル名の創作・推測・ハルシネーションは絶対禁止**
     - **タスク結果に存在しないURLやファイル名を絶対に記載しないでください**
     - **タスク結果に含まれるURLをそのまま正確にコピーして使用すること**
     - **URLやファイル名を少しでも変更・修正・推測することは厳禁**
-    - **タスク結果に含まれる出典形式（インライン引用番号と【参考情報】セクション）をそのまま維持してください**
+    - **タスク結果に含まれる出典形式(インライン引用番号と【参考情報】セクション)をそのまま維持してください**
     - 引用番号の形式: [0], [1] のように角括弧で囲む
     - 各タスク結果の出典情報を統合する場合、番号を振り直して一貫性を保つ
     - **同じファイル名・URLが複数ある場合は1つにまとめる**:
         - 例: [0] file.pdf, [1] file.pdf, [2] file.pdf → [0] file.pdf として統合
         - 本文中の引用番号も統合後の番号に合わせて調整
     - **重要: テキストスニペットは【参考情報】セクションにのみ記載し、本文中には含めないでください**
-    - **テキストスニペット（`> 該当箇所のテキスト...`）がタスク結果に含まれている場合は、【参考情報】セクションに保持してください**
+    - **テキストスニペット(`> 該当箇所のテキスト...`)がタスク結果に含まれている場合は、【参考情報】セクションに保持してください**
     - タスク結果で実際に利用した情報源のみを記載する
-    - URLの最大個数制限はなし（すべての重要な情報源を記載）
+    - URLの最大個数制限はなし(すべての重要な情報源を記載)
     - **Slack形式のマークダウンリンクを使用**: `<URL|表示名>` の形式で記述
-    - フォーマット例（スニペットあり）:
+    - フォーマット例(スニペットあり):
     ```
-    （最終的な回答の本文。スニペットは含めない）[0][1]
+    (最終的な回答の本文。スニペットは含めない)[0][1]
 
-    【参考情報】（2件）
+    【参考情報】(2件)
     [0] <URL|表示名>
-    > 該当箇所のテキストスニペット…（詳細はリンク先）
+    > 該当箇所のテキストスニペット…(詳細はリンク先)
     [1] <URL|表示名>
-    > 該当箇所のテキストスニペット…（詳細はリンク先）
+    > 該当箇所のテキストスニペット…(詳細はリンク先)
     ```
-    - フォーマット例（スニペットなし）:
+    - フォーマット例(スニペットなし):
     ```
-    （最終的な回答の本文）[0][1]
+    (最終的な回答の本文)[0][1]
 
-    【参考情報】（2件）
+    【参考情報】(2件)
     [0] <URL|表示名>
     [1] <URL|表示名>
     ```
@@ -500,16 +499,16 @@ async def generate_final_answer(state: BaseState) -> Command:
 ## 重要な注意事項:
 - タスク結果に含まれる情報を中心に回答を構成してください
 - 情報が不足している場合は、その旨を明記してください
-- **【絶対厳守】URLやファイル名のハルシネーション（創作・推測・捏造）は絶対禁止**
+- **【絶対厳守】URLやファイル名のハルシネーション(創作・推測・捏造)は絶対禁止**
 - **タスク結果に含まれるURLとファイル名を一字一句完全にコピーして使用すること**
-- **URLの文字列（特にファイルID）は一文字も変更・編集・間違えてはいけません**
+- **URLの文字列(特にファイルID)は一文字も変更・編集・間違えてはいけません**
 - **存在しないURLやファイル名を作成したり、推測したりすることは絶対に禁止**
-- **URLを記憶から再生成することは厳禁（必ずタスク結果からコピー）**
-- 情報源URLは必ず記載してください（タスク結果にURLが含まれている場合）
+- **URLを記憶から再生成することは厳禁(必ずタスク結果からコピー)**
+- 情報源URLは必ず記載してください(タスク結果にURLが含まれている場合)
 - 「BRANU株式会社の社内アシスタントAIです」のような自己紹介は回答に含めないでください
 
-## 社内規定に関する質問の場合の厳格ルール（regulation タスクがある場合）:
-- **タスク結果に含まれる情報のみを使用すること（最重要）**
+## 社内規定に関する質問の場合の厳格ルール(regulation タスクがある場合):
+- **タスク結果に含まれる情報のみを使用すること(最重要)**
 - **タスク結果にない情報は絶対に推測・創作・補完しないこと**
 - **学習済み知識や一般常識で社内規定を補足することは絶対に禁止**
 - **推測・推定・類推による回答は厳禁**
@@ -530,7 +529,7 @@ async def generate_final_answer(state: BaseState) -> Command:
 
     try:
         model = get_model("gemini-2.5-flash")
-        response = await model.ainvoke([system_message] + normalized_messages[:-1] + [human_message])
+        response = await model.ainvoke([system_message, *normalized_messages[:-1], human_message])
 
         slack_context = state.get("slack_context", {})
         channel_id = slack_context.get("channel_id")
@@ -565,5 +564,5 @@ async def generate_final_answer(state: BaseState) -> Command:
         )
 
     except Exception as e:
-        logger.error(f"generate_final_answerでエラーが発生しました: {str(e)}", exc_info=True)
+        logger.error(f"generate_final_answerでエラーが発生しました: {e!s}", exc_info=True)
         raise

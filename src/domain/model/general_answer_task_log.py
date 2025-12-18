@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from .task_log import TaskLog
 
+
 @dataclass
 class GenerationAttempt:
     response: str

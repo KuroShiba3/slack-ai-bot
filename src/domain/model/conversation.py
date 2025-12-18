@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from .message import Message, Role
 
+
 class Conversation:
     def __init__(self, id: UUID, messages: list[Message], created_at: datetime):
         if not messages:

@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+
 from ..model.conversation import Conversation
+
 
 class ConversationRepository(ABC):
     """会話履歴の永続化を管理するリポジトリのインターフェース"""

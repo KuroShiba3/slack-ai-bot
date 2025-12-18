@@ -1,8 +1,11 @@
-from typing import Dict, Any
+from typing import Any
+
 from slack_bolt.async_app import AsyncAck
 
+from ...application.usecase.answer_to_user_request_usecase import (
+    AnswerToUserRequestUseCase,
+)
 from ...log.logger import get_logger
-from ...application.usecase.answer_to_user_request_usecase import AnswerToUserRequestUseCase
 from ..mapper.slack_request_mapper import SlackRequestMapper
 
 logger = get_logger(__name__)
@@ -17,7 +20,7 @@ class SlackMessageController:
         self._mapper = mapper
         self._processed_events = set()
 
-    async def execute(self, ack: AsyncAck, body: Dict[str, Any], say) -> None:
+    async def execute(self, ack: AsyncAck, body: dict[str, Any], say) -> None:
         """Slackのメッセージイベントを処理"""
         await ack()
 

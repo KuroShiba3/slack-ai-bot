@@ -1,7 +1,10 @@
 from ...domain.model import Conversation
-from ...domain.service import AgentWorkflowService
 from ...domain.repository import ConversationRepository
-from ..dto.answer_to_user_request_usecase import AnswerToUserRequestInput, AnswerToUserRequestOutput
+from ...domain.service import AgentWorkflowService
+from ..dto.answer_to_user_request_usecase import (
+    AnswerToUserRequestInput,
+    AnswerToUserRequestOutput,
+)
 
 
 class AnswerToUserRequestUseCase:

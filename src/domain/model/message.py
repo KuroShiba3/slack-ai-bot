@@ -1,6 +1,7 @@
 from datetime import datetime
-from uuid import UUID, uuid4
 from enum import Enum
+from uuid import UUID, uuid4
+
 
 class Role(Enum):
     SYSTEM = "system"

@@ -1,31 +1,30 @@
 import asyncio
 import re
-import json
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 from uuid import UUID
 
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_core.messages import HumanMessage, SystemMessage
-from langgraph.graph import END
 from langchain_google_community import GoogleSearchAPIWrapper
+from langgraph.graph import END
 from langgraph.types import Command, Send
 from pydantic import BaseModel, Field
 
 from ...config.config import GOOGLE_API_KEY, GOOGLE_CX
 from ...config.model import get_model
-from ...utils.logger import get_logger
 from ...db.client import DatabaseClient
 from ...db.models import SearchResult
+from ...utils.logger import get_logger
 from .state import WebSearchState
 
 logger = get_logger(__name__)
 
 async def generate_search_queries(state: WebSearchState) -> WebSearchState:
-    """ユーザーの質問から最適な検索クエリを生成するノード（最大2個）"""
+    """ユーザーの質問から最適な検索クエリを生成するノード(最大2個)"""
 
     class SearchQueries(BaseModel):
-        queries: list[str] = Field(description="生成された検索クエリのリスト（最大3個）", max_length=3)
+        queries: list[str] = Field(description="生成された検索クエリのリスト(最大3個)", max_length=3)
         reason: str = Field(description="これらのクエリを選んだ理由")
 
     task_description = state.get("task_description", "")
@@ -55,7 +54,7 @@ async def generate_search_queries(state: WebSearchState) -> WebSearchState:
 
 4. **タスク内容の活用**:
     - タスクの要求を正確に理解する
-    - 代名詞（「それ」「この」など）がある場合は具体的な名詞に変換
+    - 代名詞(「それ」「この」など)がある場合は具体的な名詞に変換
     - 文脈から暗黙の情報を補完
 
 5. **検索エンジン最適化**:
@@ -108,7 +107,7 @@ async def generate_search_queries(state: WebSearchState) -> WebSearchState:
             goto=sends
         )
     except Exception as e:
-        logger.error(f"generate_search_queriesでエラーが発生しました: {str(e)}", exc_info=True)
+        logger.error(f"generate_search_queriesでエラーが発生しました: {e!s}", exc_info=True)
         raise
 
 async def execute_search(arg: dict) -> dict:
@@ -161,7 +160,7 @@ async def execute_search(arg: dict) -> dict:
                     "snippet": snippet
                 })
             except Exception as e:
-                logger.warning(f"execute_searchでWebページ取得エラー: {str(e)}", exc_info=True)
+                logger.warning(f"execute_searchでWebページ取得エラー: {e!s}", exc_info=True)
                 search_results.append({
                     "query": query,
                     "title": title,
@@ -188,7 +187,7 @@ async def execute_search(arg: dict) -> dict:
             goto="generate_task_result"
         )
     except Exception as e:
-        logger.error(f"execute_searchでエラーが発生しました: {str(e)}", exc_info=True)
+        logger.error(f"execute_searchでエラーが発生しました: {e!s}", exc_info=True)
         return Command(update={"search_results": []}, goto="generate_task_result")
 
 async def generate_task_result(state: WebSearchState) -> WebSearchState:
@@ -208,7 +207,7 @@ async def generate_task_result(state: WebSearchState) -> WebSearchState:
 ## システムアーキテクチャの理解:
 このシステムは以下の3段階で動作します:
 1. **タスク計画**: ユーザーの質問を複数のタスクに分割
-2. **タスク実行（あなたの役割）**: 各タスクについて検索を実行し、結果をまとめる
+2. **タスク実行(あなたの役割)**: 各タスクについて検索を実行し、結果をまとめる
 3. **回答生成**: すべてのタスク結果を統合してユーザーに最終回答を提示
 
 **重要**: 回答生成エージェントは検索結果を直接見ることができません。あなたのタスク結果のみを参照します。
@@ -228,14 +227,14 @@ async def generate_task_result(state: WebSearchState) -> WebSearchState:
     - 例:
         - 「気温は25度」ではなく「最高気温25度、最低気温18度」
         - 「GDP成長率は2.1%」だけでなく「2024年のGDP成長率は前年比2.1%増加」
-        - 専門用語がある場合「LLM（大規模言語モデル）」のように補足
+        - 専門用語がある場合「LLM(大規模言語モデル)」のように補足
 
 3. **タスク結果の構成**:
     - タスクの要求に対する直接的な答えを述べる
     - 必要に応じて補足情報を追加
     - 自然な文章で記述する
 
-4. **情報源の記載形式（必須）**:
+4. **情報源の記載形式(必須)**:
     - タスク結果で実際に利用した情報源のURLのみを記載する
     - 利用していないURLは記載しない
     - 同じドメインのURLが複数ある場合は、代表的なURL1つのみを記載する
@@ -247,9 +246,9 @@ async def generate_task_result(state: WebSearchState) -> WebSearchState:
     - **Slack形式のマークダウンリンクを使用**: `<URL|表示名>` の形式で記述
     - フォーマット:
     ```
-    （タスク結果の本文）[0][1]
+    (タスク結果の本文)[0][1]
 
-    【参考情報】（2件）
+    【参考情報】(2件)
     [0] <URL|表示名>
     [1] <URL|表示名>
     ```
@@ -264,8 +263,8 @@ async def generate_task_result(state: WebSearchState) -> WebSearchState:
 - タスクの要求に直接関係する情報のみを含めてください
 - 検索結果にない情報は「検索結果には含まれていません」と明記
 - 参照URLは実際にタスク結果に使用したもののみを記載してください
-- **【重要】URLは検索結果から一字一句完全にコピーすること（文字の変更・間違い厳禁）**
-- **URLのハルシネーション（文字の間違い・創作）は絶対禁止**
+- **【重要】URLは検索結果から一字一句完全にコピーすること(文字の変更・間違い厳禁)**
+- **URLのハルシネーション(文字の間違い・創作)は絶対禁止**
 - すべての詳細を含める必要はなく、次のエージェントが適切に利用できる情報量を心がけてください
 """
     )
@@ -307,7 +306,7 @@ async def generate_task_result(state: WebSearchState) -> WebSearchState:
             goto="evaluate_task_result"
         )
     except Exception as e:
-        logger.error(f"generate_task_resultでエラーが発生しました: {str(e)}", exc_info=True)
+        logger.error(f"generate_task_resultでエラーが発生しました: {e!s}", exc_info=True)
         raise
 
 async def evaluate_task_result(state: WebSearchState) -> dict:
@@ -315,9 +314,9 @@ async def evaluate_task_result(state: WebSearchState) -> dict:
 
     class TaskEvaluation(BaseModel):
         is_satisfactory: bool = Field(description="タスク結果がタスクの要求に十分答えているかどうか")
-        need: Optional[Literal["search", "generate"]] = Field(description="改善が必要な場合、どの部分の改善が必要か。search: 検索クエリや検索結果の改善、generate: タスク結果の改善。改善不要ならNone。")
+        need: Literal["search", "generate"] | None = Field(description="改善が必要な場合、どの部分の改善が必要か。search: 検索クエリや検索結果の改善、generate: タスク結果の改善。改善不要ならNone。")
         reason: str = Field(description="上記の判断理由。is_satisfactoryの判断理由、または改善が必要な場合はその理由を記述。")
-        feedback: Optional[str] = Field(description="改善が必要な場合（needがNoneでない場合）の具体的なフィードバック。searchならクエリに関するアドバイス、generateならタスク結果に関するアドバイス。")
+        feedback: str | None = Field(description="改善が必要な場合(needがNoneでない場合)の具体的なフィードバック。searchならクエリに関するアドバイス、generateならタスク結果に関するアドバイス。")
 
     task_description = state.get("task_description", "")
     task_result = state.get("task_result", "")
@@ -342,9 +341,9 @@ async def evaluate_task_result(state: WebSearchState) -> dict:
 
 **need = "search" (検索改善が必要):**
 - **検索結果にタスクに答えるための情報が全く含まれていない**
-- 検索クエリが明らかに不適切（タスクと無関係なクエリ）
+- 検索クエリが明らかに不適切(タスクと無関係なクエリ)
 - 検索結果がタスクと全く関連性がない
-- 重要な情報が検索できていない（異なる角度からの検索で改善できそう）
+- 重要な情報が検索できていない(異なる角度からの検索で改善できそう)
 
 ### 2. タスク結果の確認 (need = "generate" かどうか)
 検索結果が十分な場合、次に検索結果とタスク結果を比較し、適切に活用されているかを判断してください。
@@ -372,8 +371,8 @@ async def evaluate_task_result(state: WebSearchState) -> dict:
 - 上記の判断理由を具体的に記述してください
 
 ### 5. フィードバック (feedback)
-- **need = "search" の場合**: 検索クエリに関するアドバイス（「どのようなキーワードで検索すべきか」「どの角度から検索すべきか」など）
-- **need = "generate" の場合**: タスク結果に関するアドバイス（「どの情報を追加すべきか」「どう表現を改善すべきか」など）
+- **need = "search" の場合**: 検索クエリに関するアドバイス(「どのようなキーワードで検索すべきか」「どの角度から検索すべきか」など)
+- **need = "generate" の場合**: タスク結果に関するアドバイス(「どの情報を追加すべきか」「どう表現を改善すべきか」など)
 - **need = None の場合**: None
 
 ## 重要な注意事項:
@@ -449,7 +448,7 @@ async def evaluate_task_result(state: WebSearchState) -> dict:
                 },
                 goto="generate_search_queries"
             )
-        elif evaluation.need == "generate":
+        if evaluation.need == "generate":
             return Command(
                 update={
                     "attempt": attempt,
@@ -457,30 +456,29 @@ async def evaluate_task_result(state: WebSearchState) -> dict:
                 },
                 goto="generate_task_result"
             )
-        else:
-            # 念の為（is_satisfactoryがFalseなのにneedがNoneの場合）
-            logger.warning(f"evaluate_task_result: is_satisfactory=False but need=None. Completing task anyway.")
-            task_id = state.get("task_id", "")
+        # 念の為(is_satisfactoryがFalseなのにneedがNoneの場合)
+        logger.warning("evaluate_task_result: is_satisfactory=False but need=None. Completing task anyway.")
+        task_id = state.get("task_id", "")
 
-            if task_result:
-                try:
-                    db_client = DatabaseClient()
-                    await db_client.update_task_result(task_id, task_result)
-                except Exception as e:
-                    logger.error(f"タスク結果の保存に失敗しました: {e}", exc_info=True)
+        if task_result:
+            try:
+                db_client = DatabaseClient()
+                await db_client.update_task_result(task_id, task_result)
+            except Exception as e:
+                logger.error(f"タスク結果の保存に失敗しました: {e}", exc_info=True)
 
-            return Command(
-                update={
-                    "attempt": attempt,
-                    "completed": True,
-                    "tasks": [{
-                        "task_id": task_id,
-                        "task_description": task_description,
-                        "task_result": task_result
-                    }]
-                },
-                goto=END
-            )
+        return Command(
+            update={
+                "attempt": attempt,
+                "completed": True,
+                "tasks": [{
+                    "task_id": task_id,
+                    "task_description": task_description,
+                    "task_result": task_result
+                }]
+            },
+            goto=END
+        )
     except Exception as e:
-        logger.error(f"evaluate_task_resultでエラーが発生しました: {str(e)}", exc_info=True)
+        logger.error(f"evaluate_task_resultでエラーが発生しました: {e!s}", exc_info=True)
         raise

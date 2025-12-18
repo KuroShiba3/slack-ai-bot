@@ -1,14 +1,17 @@
 import re
-from typing import Dict, Any
+from typing import Any
+
+from ...application.dto.answer_to_user_request_usecase.answer_to_user_request_input import (
+    AnswerToUserRequestInput,
+)
 from ..dto.slack_request_dto import SlackRequestDTO
-from ...application.dto.answer_to_user_request_usecase.answer_to_user_request_input import AnswerToUserRequestInput
 
 
 class SlackRequestMapper:
     """Slackリクエストの変換を担当するマッパー"""
 
     @staticmethod
-    def from_event(event: Dict[str, Any]) -> SlackRequestDTO:
+    def from_event(event: dict[str, Any]) -> SlackRequestDTO:
         """SlackイベントからDTOを生成"""
         text = SlackRequestMapper._remove_mention(event.get('text', ''))
 

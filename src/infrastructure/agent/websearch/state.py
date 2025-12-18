@@ -1,14 +1,15 @@
 import operator
-from typing import Annotated, Optional, TypedDict
+from typing import Annotated, TypedDict
 
 from ...state.state import BaseState
+
 
 class SearchResult(TypedDict):
     query: str
     title: str
     url: str
     snippet: str
-    content: Optional[str]
+    content: str | None
 
 def merge_search_results(left: list[SearchResult] | None, right: list[SearchResult] | None) -> list[SearchResult]:
     """並列更新を許可しつつ、空リストでのクリアするリデューサー"""
@@ -23,10 +24,10 @@ def merge_search_results(left: list[SearchResult] | None, right: list[SearchResu
 class PrivateState(TypedDict):
     task_id: str
     task_description: str
-    task_result: Optional[str]
+    task_result: str | None
     search_queries: Annotated[list[str], operator.add]
     search_results: Annotated[list[SearchResult], merge_search_results]
-    feedback: Optional[str]
+    feedback: str | None
     attempt: int
     completed: bool
 
