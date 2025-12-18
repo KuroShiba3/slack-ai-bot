@@ -18,7 +18,7 @@ class SlackAdapter:
         handler = AsyncSocketModeHandler(self.app, SLACK_APP_TOKEN)
         await handler.start_async()
 
-    def setup_webhook_routes(self, fastapi_app: FastAPI):
+    def setup_routes(self, fastapi_app: FastAPI):
         handler = AsyncSlackRequestHandler(self.app)
 
         @fastapi_app.post("/slack/events")
@@ -33,6 +33,9 @@ class SlackAdapter:
         self.app.event(event_type)(handler)
 
     def _create_slack_app(self) -> AsyncApp:
+        if not SLACK_BOT_TOKEN or not SLACK_SIGNING_SECRET:
+            raise ValueError("環境変数 SLACK_BOT_TOKEN または SLACK_SIGNING_SECRET が設定されていません。")
+
         app = AsyncApp(
             token=SLACK_BOT_TOKEN,
             signing_secret=SLACK_SIGNING_SECRET
