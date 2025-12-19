@@ -3,11 +3,13 @@ from enum import Enum
 from uuid import UUID, uuid4
 
 from .task_log import TaskLog
+from .web_search_task_log import WebSearchTaskLog
+from .general_answer_task_log import GeneralAnswerTaskLog
 
 
 class AgentName(Enum):
-    WEB_SEARCH = "web_search"
     GENERAL_ANSWER = "general_answer"
+    WEB_SEARCH = "web_search"
 
 class TaskStatus(Enum):
     IN_PROGRESS = "in_progress"
@@ -20,39 +22,50 @@ class Task:
         id: UUID,
         description: str,
         agent_name: AgentName,
-        status: TaskStatus,
-        result: str | None,
-        task_log: TaskLog | None,
-        created_at: datetime,
-        completed_at: datetime | None,
+        task_log: TaskLog,
+        status: TaskStatus = TaskStatus.IN_PROGRESS,
+        result: str | None = None,
+        created_at: datetime | None = None,
+        completed_at: datetime | None = None,
     ):
         if not description:
             raise ValueError("タスクの説明が空です。")
         if not agent_name:
             raise ValueError("エージェント名が空です。")
+        if not task_log:
+            raise ValueError("タスクログが必要です。")
 
         self._id = id
         self._description = description
         self._agent_name = agent_name
+        self._task_log = task_log
         self._status = status
         self._result = result
-        self._task_log = task_log
-        self._created_at = created_at
+        self._created_at = created_at or datetime.now()
         self._completed_at = completed_at
 
     @classmethod
-    def create(cls, description: str, agent_name: AgentName) -> "Task":
-        created_at = datetime.now()
-        completed_at = None
+    def create_web_search(cls, description: str) -> "Task":
+        """Web検索タスクを生成"""
         return cls(
             id=uuid4(),
             description=description,
-            agent_name=agent_name,
+            agent_name=AgentName.WEB_SEARCH,
+            task_log=WebSearchTaskLog.create(),
             status=TaskStatus.IN_PROGRESS,
-            result=None,
-            work_log=None,
-            created_at=created_at,
-            completed_at=completed_at,
+            created_at=datetime.now()
+        )
+
+    @classmethod
+    def create_general_answer(cls, description: str) -> "Task":
+        """一般回答タスクを生成"""
+        return cls(
+            id=uuid4(),
+            description=description,
+            agent_name=AgentName.GENERAL_ANSWER,
+            task_log=GeneralAnswerTaskLog.create(),
+            status=TaskStatus.IN_PROGRESS,
+            created_at=datetime.now()
         )
 
     @classmethod
@@ -61,25 +74,26 @@ class Task:
         id: UUID,
         description: str,
         agent_name: AgentName,
+        task_log: TaskLog,
         status: TaskStatus,
-        result: str,
-        task_log: TaskLog | None,
+        result: str | None,
         created_at: datetime,
         completed_at: datetime | None,
     ) -> "Task":
+        """既存のタスクを再構築"""
         return cls(
             id=id,
             description=description,
             agent_name=agent_name,
+            task_log=task_log,
             status=status,
             result=result,
-            task_log=task_log,
             created_at=created_at,
             completed_at=completed_at,
         )
 
     @property
-    def id(self) -> str:
+    def id(self) -> UUID:
         return self._id
 
     @property
@@ -107,16 +121,21 @@ class Task:
         return self._completed_at
 
     @property
-    def task_log(self) -> TaskLog | None:
+    def task_log(self) -> TaskLog:
         return self._task_log
 
-    def set_task_log(self, task_log: TaskLog) -> None:
-        """作業ログを設定(エージェントが作業開始時に設定)"""
-        if self._task_log is not None:
-            raise ValueError("作業ログは既に設定されています")
-        self._task_log = task_log
-        self._task_log.mark_started()
-        self._completed_at = None
+    def get_web_search_log(self) -> WebSearchTaskLog | None:
+        """Web検索ログを取得（型安全）"""
+        if isinstance(self._task_log, WebSearchTaskLog):
+            return self._task_log
+        return None
+
+    def get_general_answer_log(self) -> GeneralAnswerTaskLog | None:
+        """一般回答ログを取得（型安全）"""
+        if isinstance(self._task_log, GeneralAnswerTaskLog):
+            return self._task_log
+        return None
+
 
     def complete(self, result: str) -> None:
         """タスクを完了し、結果を記録"""
@@ -127,20 +146,50 @@ class Task:
 
         self._status = TaskStatus.COMPLETED
         self._result = result
-        if self._task_log:
-            self._task_log.mark_completed()
         self._completed_at = datetime.now()
 
     def fail(self, error_message: str) -> None:
         """タスクを失敗として記録"""
         self._status = TaskStatus.FAILED
         self._result = f"Error: {error_message}"
-        if self._task_log:
-            self._task_log.mark_failed(error_message)
         self._completed_at = datetime.now()
 
-    def should_retry(self) -> bool:
-        """リトライすべきか判定"""
-        if self._task_log:
-            return self._task_log.should_retry()
-        return False
+    def to_dict(self) -> dict:
+        """State保存用の辞書に変換"""
+        return {
+            "id": str(self._id),
+            "description": self._description,
+            "agent_name": self._agent_name.value,
+            "status": self._status.value,
+            "result": self._result,
+            "task_log": self._task_log.to_dict() if self._task_log else {"type": "unknown", "attempts": []},
+            "created_at": self._created_at.isoformat(),
+            "completed_at": self._completed_at.isoformat() if self._completed_at else None
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Task":
+        """辞書からTaskを復元"""
+        from .web_search_task_log import WebSearchTaskLog
+        from .general_answer_task_log import GeneralAnswerTaskLog
+
+        # TaskLogの復元
+        task_log_data = data.get("task_log", {})
+        if task_log_data.get("type") == "web_search":
+            task_log = WebSearchTaskLog.from_dict(task_log_data)
+        elif task_log_data.get("type") == "general_answer":
+            task_log = GeneralAnswerTaskLog.from_dict(task_log_data)
+        else:
+            # デフォルトでWebSearchTaskLogを作成
+            task_log = WebSearchTaskLog()
+
+        return cls.reconstruct(
+            id=UUID(data["id"]),
+            description=data["description"],
+            agent_name=AgentName(data["agent_name"]),
+            task_log=task_log,
+            status=TaskStatus(data["status"]),
+            result=data.get("result"),
+            created_at=datetime.fromisoformat(data["created_at"]),
+            completed_at=datetime.fromisoformat(data["completed_at"]) if data.get("completed_at") else None
+        )
