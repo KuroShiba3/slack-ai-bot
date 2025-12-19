@@ -49,8 +49,3 @@ class Conversation:
         """アシスタントからのメッセージを追加"""
         message = Message.create_assistant_message(content)
         self._messages.append(message)
-
-    def append_system_message(self, content: str) -> Message:
-        """システムメッセージを追加"""
-        message = Message.create_system_message(content)
-        self._messages.append(message)
