@@ -1,10 +1,11 @@
-from typing import Any
+from typing import Any, Optional
 
 from slack_bolt.async_app import AsyncAck
 
 from ...application.usecase.answer_to_user_request_usecase import (
     AnswerToUserRequestUseCase,
 )
+from ...infrastructure.slack.slack_message_service import SlackMessageService
 from ...log.logger import get_logger
 from ..mapper.slack_request_mapper import SlackRequestMapper
 
@@ -14,10 +15,12 @@ class SlackMessageController:
     def __init__(
         self,
         use_case: AnswerToUserRequestUseCase,
-        mapper: SlackRequestMapper
+        mapper: SlackRequestMapper,
+        slack_service: SlackMessageService,
     ):
         self._use_case = use_case
         self._mapper = mapper
+        self._slack_service = slack_service
         self._processed_events = set()
 
     async def execute(self, ack: AsyncAck, body: dict[str, Any], say) -> None:
@@ -28,29 +31,30 @@ class SlackMessageController:
         slack_dto = self._mapper.from_event(event)
 
         if slack_dto.event_id in self._processed_events:
-            logger.info(f"重複したイベントをスキップしました: {slack_dto.event_id}")
+            logger.debug(f"重複したイベントをスキップしました: {slack_dto.event_id}")
             return
         self._processed_events.add(slack_dto.event_id)
 
         if self._mapper.is_bot_message(slack_dto):
-            logger.info("ボットメッセージを無視します")
-            return
-
-        if not self._use_case:
-            logger.warning("ユースケースが設定されていません")
+            logger.debug("ボットメッセージを無視します")
             return
 
         try:
             input_dto = self._mapper.to_application_input(slack_dto)
             output_dto = await self._use_case.execute(input_dto)
 
-            await say(
-                text=output_dto.answer,
-                thread_ts=slack_dto.thread_ts or slack_dto.message_ts
-            )
+            await self._slack_service.send_message(
+                    channel=event.get("channel"),
+                    text=output_dto.answer,
+                    thread_ts=slack_dto.thread_ts or slack_dto.message_ts,
+                    message_id=output_dto.message_id,
+                )
         except Exception as e:
             logger.error(f"メッセージ処理でエラーが発生しました: {e}")
-            await say(
-                text="申し訳ありません。エラーが発生しました。",
-                thread_ts=slack_dto.thread_ts or slack_dto.message_ts
-            )
+
+            await self._slack_service.send_message(
+                    channel=event.get("channel"),
+                    text="申し訳ありません。エラーが発生しました。",
+                    thread_ts=slack_dto.thread_ts or slack_dto.message_ts,
+                    use_blocks=False,
+                )
