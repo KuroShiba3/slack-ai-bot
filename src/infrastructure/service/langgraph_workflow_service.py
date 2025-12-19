@@ -1,15 +1,61 @@
 import asyncio
-from typing import Any
+from typing import Any, Annotated, TypedDict, Literal, Optional, Union
 
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AnyMessage
+from langgraph.graph.message import add_messages
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from langgraph.graph import StateGraph
 
 from ...config import POSTGRES_URL
-from ...domain.model.final_answer import FinalAnswer
+from ...domain.model import FinalAnswer
 from ...domain.service.agent_workflow_service import AgentWorkflowService
 from ...log.logger import get_logger
 
 logger = get_logger(__name__)
+
+class Context(TypedDict):
+    channel_id: str
+    thread_ts: str
+    message_ts: str
+    user_id: str
+
+class SearchResult(TypedDict):
+    url: str
+    title: str
+    content: str
+
+class SearchAttemptDict(TypedDict):
+    query: str
+    results: list[SearchResult]
+
+class WebSearchTaskLog(TypedDict):
+    type: Literal["web_search"]
+    attempts: list[SearchAttemptDict]
+
+class GenerationAttempt(TypedDict):
+    response: str
+
+class GeneralAnswerTaskLog(TypedDict):
+    type: Literal["general_answer"]
+    attempts: list[GenerationAttempt]
+
+TaskLog = Union[WebSearchTaskLog, GeneralAnswerTaskLog]
+
+class Task(TypedDict):
+    id: str
+    description: str
+    agent_name: str
+    status: str
+    result: Optional[str]
+    task_log: TaskLog
+    created_at: str
+    completed_at: Optional[str]
+
+class BaseState(TypedDict, total=False):
+    messages: Annotated[list[AnyMessage], add_messages]
+    context: Context
+    tasks: list[Task]
+    final_answer: str | None
 
 class LangGraphWorkflowService(AgentWorkflowService):
     _graph = None
@@ -19,8 +65,8 @@ class LangGraphWorkflowService(AgentWorkflowService):
     _checkpointer_lock = asyncio.Lock()
     _graph_semaphore = asyncio.Semaphore(60)
 
-    def __init__(self):
-        pass
+    def __init__(self, state: BaseState):
+        self._state = state
 
     @classmethod
     async def _get_checkpointer(cls):
@@ -43,37 +89,6 @@ class LangGraphWorkflowService(AgentWorkflowService):
         return cls._checkpointer
 
     @classmethod
-    async def _build_graph(cls):
-        """LangGraphのグラフを構築"""
-        # TODO: 実際のLangGraph実装
-        # from langgraph.graph import StateGraph, END
-        #
-        # checkpointer = await cls._get_checkpointer()
-        #
-        # workflow = StateGraph(State)
-        # workflow.add_node("plan", cls._plan_node)
-        # workflow.add_node("execute_web_search", cls._execute_web_search_node)
-        # workflow.add_node("execute_general_answer", cls._execute_general_answer_node)
-        # workflow.add_node("evaluate", cls._evaluate_node)
-        # workflow.add_node("aggregate", cls._aggregate_node)
-        #
-        # # エッジの定義
-        # workflow.add_edge("plan", ["execute_web_search", "execute_general_answer"])
-        # workflow.add_edge(["execute_web_search", "execute_general_answer"], "evaluate")
-        # workflow.add_conditional_edges(
-        #     "evaluate",
-        #     cls._should_retry,
-        #     {
-        #         "retry": "plan",
-        #         "continue": "aggregate"
-        #     }
-        # )
-        # workflow.add_edge("aggregate", END)
-        #
-        # return workflow.compile(checkpointer=checkpointer)
-        pass
-
-    @classmethod
     async def _get_graph(cls):
         if cls._graph is None:
             async with cls._graph_lock:
@@ -84,12 +99,14 @@ class LangGraphWorkflowService(AgentWorkflowService):
     async def execute(self, user_message: str, context: dict[str, Any]) -> FinalAnswer:
         async with self._graph_semaphore:
             try:
+                initial_state = {
+                    "messages": [HumanMessage(content=user_message)],
+                    "context": context
+                }
+
                 graph = await self._get_graph()
                 result = await graph.ainvoke(
-                    {
-                        "messages": [HumanMessage(content=user_message)],
-                        "context": context or {}
-                    },
+                    initial_state,
                     {"configurable": {"thread_id": context.get("thread_id", "")}}
                 )
                 return FinalAnswer(result.get("final_answer", ""))
@@ -97,3 +114,12 @@ class LangGraphWorkflowService(AgentWorkflowService):
             except Exception as e:
                 logger.error(f"ワークフロー実行中にエラーが発生しました: {e}")
                 raise
+
+    async def build_graph(self):
+        """LangGraphのグラフを構築"""
+
+        checkpointer = await self._get_checkpointer()
+
+        graph = StateGraph(self._state)
+
+        return graph.compile(checkpointer=checkpointer)
