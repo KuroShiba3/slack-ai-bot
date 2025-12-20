@@ -4,7 +4,6 @@ from uuid import UUID, uuid4
 
 
 class Role(Enum):
-    SYSTEM = "system"
     ASSISTANT = "assistant"
     USER = "user"
 
@@ -37,11 +36,6 @@ class Message:
     def create_assistant_message(cls, content: str) -> "Message":
         """アシスタントメッセージを生成"""
         return cls.create(Role.ASSISTANT, content)
-
-    @classmethod
-    def create_system_message(cls, content: str) -> "Message":
-        """システムメッセージを生成"""
-        return cls.create(Role.SYSTEM, content)
 
     @property
     def id(self) -> UUID:
