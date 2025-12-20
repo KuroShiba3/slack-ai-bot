@@ -1,6 +1,6 @@
 from ...domain.model import Conversation
 from ...domain.repository import ConversationRepository
-from ...domain.service import AgentWorkflowService
+from ...domain.service.agent_workflow_service import IAgentWorkflowService
 from ..dto.answer_to_user_request_usecase import (
     AnswerToUserRequestInput,
     AnswerToUserRequestOutput,
@@ -10,30 +10,32 @@ from ..dto.answer_to_user_request_usecase import (
 class AnswerToUserRequestUseCase:
     def __init__(
         self,
-        workflow_service: AgentWorkflowService,
+        workflow_service: IAgentWorkflowService,
         conversation_repository: ConversationRepository,
     ):
         self._workflow_service = workflow_service
         self._conversation_repository = conversation_repository
 
     async def execute(self, input_dto: AnswerToUserRequestInput) -> AnswerToUserRequestOutput:
+        thread_id = input_dto.context.get("thread_ts")
 
-        # 会話履歴の取得
-        conversation = None
-        conversation_id = input_dto.context.get("conversation_id", "")
-        if conversation_id:
-            conversation = await self._conversation_repository.find_by_id(conversation_id)
-        if conversation is None:
+        # 会話を取得または作成
+        conversation = await self._conversation_repository.find_by_thread_id(thread_id)
+        if not conversation:
             conversation = Conversation.create()
 
-        # ユーザーメッセージの追加
-        conversation.append_user_message(input_dto.user_message)
+        # ユーザーメッセージを追加
+        conversation.add_user_message(input_dto.user_message)
 
-        # AIワークフロー実行
-        final_answer = await self._workflow_service.execute(user_message=input_dto.user_message, context=input_dto.context)
+        # ワークフロー実行
+        result = await self._workflow_service.execute(conversation, input_dto.context)
 
-        # AIの回答を会話履歴に追加して保存
-        conversation.append_assistant_message(final_answer)
+        # 結果を会話に追加
+        conversation.add_assistant_message(result.answer)
+        conversation.add_task_plan(result.task_plan)
+
+        # 保存
         await self._conversation_repository.save(conversation)
 
-        return AnswerToUserRequestOutput(answer=final_answer)
+        # 回答を返す
+        return AnswerToUserRequestOutput(answer=result.answer)
