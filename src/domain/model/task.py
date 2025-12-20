@@ -124,19 +124,6 @@ class Task:
     def task_log(self) -> TaskLog:
         return self._task_log
 
-    def get_web_search_log(self) -> WebSearchTaskLog | None:
-        """Web検索ログを取得（型安全）"""
-        if isinstance(self._task_log, WebSearchTaskLog):
-            return self._task_log
-        return None
-
-    def get_general_answer_log(self) -> GeneralAnswerTaskLog | None:
-        """一般回答ログを取得（型安全）"""
-        if isinstance(self._task_log, GeneralAnswerTaskLog):
-            return self._task_log
-        return None
-
-
     def complete(self, result: str) -> None:
         """タスクを完了し、結果を記録"""
         if self._status != TaskStatus.IN_PROGRESS:
@@ -153,43 +140,3 @@ class Task:
         self._status = TaskStatus.FAILED
         self._result = f"Error: {error_message}"
         self._completed_at = datetime.now()
-
-    def to_dict(self) -> dict:
-        """State保存用の辞書に変換"""
-        return {
-            "id": str(self._id),
-            "description": self._description,
-            "agent_name": self._agent_name.value,
-            "status": self._status.value,
-            "result": self._result,
-            "task_log": self._task_log.to_dict() if self._task_log else {"type": "unknown", "attempts": []},
-            "created_at": self._created_at.isoformat(),
-            "completed_at": self._completed_at.isoformat() if self._completed_at else None
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict) -> "Task":
-        """辞書からTaskを復元"""
-        from .web_search_task_log import WebSearchTaskLog
-        from .general_answer_task_log import GeneralAnswerTaskLog
-
-        # TaskLogの復元
-        task_log_data = data.get("task_log", {})
-        if task_log_data.get("type") == "web_search":
-            task_log = WebSearchTaskLog.from_dict(task_log_data)
-        elif task_log_data.get("type") == "general_answer":
-            task_log = GeneralAnswerTaskLog.from_dict(task_log_data)
-        else:
-            # デフォルトでWebSearchTaskLogを作成
-            task_log = WebSearchTaskLog()
-
-        return cls.reconstruct(
-            id=UUID(data["id"]),
-            description=data["description"],
-            agent_name=AgentName(data["agent_name"]),
-            task_log=task_log,
-            status=TaskStatus(data["status"]),
-            result=data.get("result"),
-            created_at=datetime.fromisoformat(data["created_at"]),
-            completed_at=datetime.fromisoformat(data["completed_at"]) if data.get("completed_at") else None
-        )
