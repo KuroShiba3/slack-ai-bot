@@ -40,6 +40,8 @@ class SlackMessageController:
             return
 
         try:
+            await self._slack_service.add_reaction(slack_dto.channel_id, slack_dto.message_ts, "eyes")
+
             input_dto = self._mapper.to_application_input(slack_dto)
             output_dto = await self._use_case.execute(input_dto)
 
