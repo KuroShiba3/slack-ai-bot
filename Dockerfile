@@ -18,4 +18,4 @@ RUN uv sync --frozen --no-dev
 COPY ./src ./src
 COPY ./migrations ./migrations
 EXPOSE 8080
-CMD ["uv", "run", "python", "-m", "src.main"]
+CMD ["sh", "-c", "uv run uvicorn src.main:app --host 0.0.0.0 --port ${PORT}"]
