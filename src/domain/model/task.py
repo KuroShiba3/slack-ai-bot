@@ -140,3 +140,12 @@ class Task:
         self._status = TaskStatus.FAILED
         self._result = f"Error: {error_message}"
         self._completed_at = datetime.now()
+
+    def add_log_attempt(self, **kwargs) -> None:
+        """試行をタスクログに追加
+
+        各タスクタイプに応じて適切なパラメータを渡す:
+        - Web検索タスク: query, results
+        - 一般回答タスク: response
+        """
+        self._task_log.add_attempt(**kwargs)

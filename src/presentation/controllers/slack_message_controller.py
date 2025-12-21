@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from slack_bolt.async_app import AsyncAck
 
@@ -12,6 +12,8 @@ from ..mapper.slack_request_mapper import SlackRequestMapper
 logger = get_logger(__name__)
 
 class SlackMessageController:
+    _processed_events: set[str] = set()
+
     def __init__(
         self,
         use_case: AnswerToUserRequestUseCase,
@@ -21,7 +23,6 @@ class SlackMessageController:
         self._use_case = use_case
         self._mapper = mapper
         self._slack_service = slack_service
-        self._processed_events = set()
 
     async def execute(self, ack: AsyncAck, body: dict[str, Any], say) -> None:
         """Slackのメッセージイベントを処理"""
@@ -29,7 +30,6 @@ class SlackMessageController:
 
         event = body.get('event', {})
         slack_dto = self._mapper.from_event(event)
-
         if slack_dto.event_id in self._processed_events:
             logger.debug(f"重複したイベントをスキップしました: {slack_dto.event_id}")
             return
@@ -51,6 +51,8 @@ class SlackMessageController:
                     thread_ts=slack_dto.thread_ts or slack_dto.message_ts,
                     message_id=output_dto.message_id,
                 )
+
+            await self._slack_service.remove_reaction(slack_dto.channel_id, slack_dto.message_ts, "eyes")
         except Exception as e:
             logger.error(f"メッセージ処理でエラーが発生しました: {e}")
 

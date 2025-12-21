@@ -6,10 +6,10 @@ class ModelFactory:
     def __init__(
         self,
         google_api_key: str,
-        default_config: Optional[Dict[str, Any]] = { "temperature": 0},
+        default_config: Optional[Dict[str, Any]] = None,
     ):
         self._google_api_key = google_api_key
-        self._default_config = default_config
+        self._default_config = default_config or {"temperature": 0}
 
     def create(self, model_name: str) -> BaseChatModel:
         """指定されたモデルを生成"""

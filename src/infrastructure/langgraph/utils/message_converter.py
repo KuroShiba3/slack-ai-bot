@@ -1,6 +1,6 @@
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
 
-from ...domain.model import Message, Role
+from ....domain.model import Message, Role
 
 
 class MessageConverter:

@@ -17,11 +17,11 @@ class SlackRequestMapper:
 
         return SlackRequestDTO(
             text=text,
-            user_id=event.get('user_id', ''),
-            channel_id=event.get('channel_id', ''),
-            thread_ts=event.get('thread_ts'),
-            message_ts=event.get('ts'),
-            event_id=event.get('event_id'),
+            user_id=event.get('user', ''),
+            channel_id=event.get('channel', ''),
+            message_ts=event.get('ts', ''),
+            thread_ts=event.get('thread_ts', event.get('ts', '')),
+            event_id=event.get('event_ts'),
             bot_id=event.get('bot_id')
         )
 

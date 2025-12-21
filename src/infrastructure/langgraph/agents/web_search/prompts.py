@@ -144,3 +144,20 @@ def get_evaluate_task_result_system(current_date: str = None) -> str:
 ## 重要:
 - is_satisfactory は need が None の場合のみ True
 - feedback は具体的で実行可能な内容に"""
+
+
+def get_evaluate_task_result_human(task_description: str, task_result: str, search_results: list = None) -> str:
+    """評価用のヒューマンメッセージを生成"""
+    parts = [
+        f"## 割り当てられたタスク:\n{task_description}",
+        f"\n## 生成されたタスク結果:\n{task_result}"
+    ]
+
+    if search_results:
+        parts.append("\n## 取得した検索結果:")
+        for i, result in enumerate(search_results, 1):
+            parts.append(f"\n### 検索結果 {i}")
+            parts.append(f"\n**URL**: {result.url}")
+            parts.append(f"\n**タイトル**: {result.title}")
+
+    return "".join(parts)

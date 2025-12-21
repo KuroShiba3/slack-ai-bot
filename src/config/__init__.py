@@ -11,7 +11,7 @@ SLACK_SIGNING_SECRET = os.environ.get("SLACK_SIGNING_SECRET")
 
 # Google関連
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
-GOOGLE_CX = os.environ.get("GOOGLE_CX")
+GOOGLE_CSE_ID = os.environ.get("GOOGLE_CSE_ID")
 
 # Database関連
 POSTGRES_URL = os.environ.get("POSTGRES_URL")

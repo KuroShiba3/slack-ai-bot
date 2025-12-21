@@ -1,1 +1,1 @@
-from .agent_workflow_service import AgentWorkflowService
+from .workflow_service import IWorkflowService

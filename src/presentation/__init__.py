@@ -1,1 +1,1 @@
-from .controllers.message_controller import MessageController
+from .controllers.slack_message_controller import SlackMessageController

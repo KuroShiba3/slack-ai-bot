@@ -5,10 +5,16 @@ from fastapi import FastAPI
 
 from .config import ENV
 from .infrastructure.slack.slack_adapter import SlackAdapter
-from .presentation.controllers import SlackMessageController
+from .di_container import DIContainer
 
+# Slackアダプターを初期化
 slack_adapter = SlackAdapter()
-slack_message_controller = SlackMessageController()
+
+# DIコンテナを初期化（SlackクライアントをDIコンテナに渡す）
+container = DIContainer(slack_client=slack_adapter.app.client)
+
+# 依存関係を注入
+slack_message_controller = container.slack_message_controller
 
 slack_adapter.register_handler("app_mention", slack_message_controller.execute)
 slack_adapter.register_handler("message", slack_message_controller.execute)
