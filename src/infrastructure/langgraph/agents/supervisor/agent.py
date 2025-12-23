@@ -22,7 +22,7 @@ class SupervisorAgent:
     async def plan_tasks(self, state: BaseState, config: RunnableConfig | None = None) -> Command:
 
         if config is None:
-            config = {}
+            config = RunnableConfig()
         configurable = config.get("configurable", {})
         model_name = configurable.get("plan_tasks_model", configurable.get("default_model", "gemini-2.0-flash"))
 
@@ -52,7 +52,6 @@ class SupervisorAgent:
                 raise ValueError("生成されたタスクが空です")
 
             tasks = []
-            sends = []
             for task_info in plan.tasks:
                 if task_info.next_agent == "web_search":
                     task = Task.create_web_search(task_info.task_description)
@@ -63,14 +62,6 @@ class SupervisorAgent:
                 else:
                     raise ValueError(f"不明なエージェントです: {task_info.next_agent}")
 
-                sends.append(
-                    Send(
-                        task.agent_name.value,
-                        {"task_id": str(task.id)}
-                    )
-                )
-
-            # TaskPlanドメインモデルを作成
             latest_message = chat_session.last_user_message()
             if not latest_message:
                 raise ValueError("ユーザーメッセージが見つかりません")
@@ -80,17 +71,13 @@ class SupervisorAgent:
                 tasks=tasks
             )
 
-            # SendにはBaseStateの全フィールドを含める必要がある
-            # これによりサブグラフでもBaseStateにアクセスできる
-            updated_sends = [
+            sends = [
                 Send(
                     task.agent_name.value,
                     {
                         "task_id": str(task.id),
                         "chat_session": chat_session,
-                        "context": state.get("context"),
                         "task_plan": task_plan,
-                        "answer": None
                     }
                 )
                 for task in tasks
@@ -98,7 +85,7 @@ class SupervisorAgent:
 
             return Command(
                 update={"task_plan": task_plan},
-                goto=updated_sends
+                goto=sends
             )
         except Exception as e:
             logger.error(f"plan_tasksでエラーが発生しました: {str(e)}", exc_info=True)
@@ -107,7 +94,7 @@ class SupervisorAgent:
     async def generate_final_answer(self, state: BaseState, config: RunnableConfig | None = None) -> Command:
 
         if config is None:
-            config = {}
+            config = RunnableConfig()
         configurable = config.get("configurable", {})
         model_name = configurable.get("generate_final_answer_model", configurable.get("default_model", "gemini-2.0-flash"))
 
