@@ -23,6 +23,6 @@ class Context(TypedDict):
 
 class BaseState(TypedDict):
     chat_session: Annotated[ChatSession, take_first]
-    context: Annotated[Context, take_first]
+    context: Context
     task_plan: Annotated[TaskPlan | None, take_first]
-    answer: Annotated[str | None, take_first]
+    answer: str | None
