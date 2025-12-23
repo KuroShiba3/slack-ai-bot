@@ -11,7 +11,6 @@ from langgraph.graph import StateGraph, END
 
 from .....domain.model import WebSearchTaskLog, Task, SearchResult, TaskPlan
 from ....llm import ModelFactory
-from ....slack import SlackMessageService
 from .....log import get_logger
 from ...graph.state import BaseState
 from .prompts import (
@@ -31,7 +30,6 @@ class PrivateState(TypedDict, total=False):
     attempt: int
     task_id: str
     query: str
-    task_plan: TaskPlan
 
 
 class WebSearchState(BaseState, PrivateState):
@@ -41,11 +39,9 @@ class WebSearchState(BaseState, PrivateState):
 class WebSearchAgent:
     def __init__(self,
                 model_factory: ModelFactory,
-                slack_service: SlackMessageService,
                 google_api_key: str,
                 google_cse_id: str):
         self._model_factory = model_factory
-        self._slack_service = slack_service
         self._google_api_key = google_api_key
         self._google_cse_id = google_cse_id
 
@@ -65,7 +61,7 @@ class WebSearchAgent:
 
         # configからノード固有のmodel_nameを取得（フォールバックあり）
         if config is None:
-            config = {}
+            config = RunnableConfig()
         configurable = config.get("configurable", {})
         model_name = configurable.get("generate_search_queries_model", configurable.get("default_model", "gemini-2.0-flash"))
 
@@ -106,20 +102,14 @@ class WebSearchAgent:
                 logger.warning("generate_search_queriesでクエリが生成されませんでした")
                 task.fail("適切な検索クエリを生成できませんでした。")
 
-                # task_planはミュータブルなので、updateで返す必要はない
-                return Command(update={}, goto=END)
+                return Command(goto=END)
 
-            # SendにBaseStateの全フィールドを含める
+            # execute_searchに必要なフィールドを渡す
             sends = [
                 Send("execute_search", {
-                    "query": query,
                     "task_id": task_id,
-                    "chat_session": state.get("chat_session"),
-                    "context": state.get("context"),
                     "task_plan": state.get("task_plan"),
-                    "answer": state.get("answer"),
-                    "feedback": state.get("feedback"),
-                    "attempt": state.get("attempt", 0)
+                    "query": query
                 })
                 for query in search_queries_result.queries
             ]
@@ -141,8 +131,8 @@ class WebSearchAgent:
             lines = [line for line in lines if line]
             return '\n'.join(lines)
 
-        if not query or not task_id:
-            return Command(update={}, goto="generate_task_result")
+        if not query :
+            return Command(update={}, goto=END)
 
         # タスクを取得
         task = self._get_task_from_state(state, task_id)
@@ -156,7 +146,7 @@ class WebSearchAgent:
             results = search.results(query, num_results=3)
 
             if not results:
-                return Command(update={}, goto="generate_task_result")
+                return Command(goto="generate_task_result")
 
             search_results: list[SearchResult] = []
             for result in results:
@@ -190,7 +180,6 @@ class WebSearchAgent:
             if search_results:
                 task.add_log_attempt(query=query, results=search_results)
 
-            # task_planはミュータブルなので、updateで返す必要はない
             return Command(update={}, goto="generate_task_result")
 
         except Exception as e:
@@ -201,7 +190,7 @@ class WebSearchAgent:
 
         # configからノード固有のmodel_nameを取得（フォールバックあり）
         if config is None:
-            config = {}
+            config = RunnableConfig()
         configurable = config.get("configurable", {})
         model_name = configurable.get("generate_task_result_model", configurable.get("default_model", "gemini-2.0-flash"))
 
@@ -240,7 +229,6 @@ class WebSearchAgent:
             # タスクを完了
             task.complete(answer.content)
 
-            # task_planはミュータブルなので、updateで返す必要はない
             return Command(update={}, goto="evaluate_task_result")
 
         except Exception as e:
@@ -250,7 +238,7 @@ class WebSearchAgent:
     async def evaluate_task_result(self, state: WebSearchState, config: RunnableConfig | None = None) -> Command:
         # configからノード固有のmodel_nameを取得（フォールバックあり）
         if config is None:
-            config = {}
+            config = RunnableConfig()
         configurable = config.get("configurable", {})
         model_name = configurable.get("evaluate_task_result_model", configurable.get("default_model", "gemini-2.0-flash"))
 
@@ -269,7 +257,7 @@ class WebSearchAgent:
         task = self._get_task_from_state(state, task_id)
 
         if not task.result:
-            return Command(update={}, goto=END)
+            return Command(goto=END)
 
         # タスクログから検索結果を取得
         search_results = []
@@ -293,7 +281,7 @@ class WebSearchAgent:
             )
 
             if evaluation.is_satisfactory or attempt >= 2:
-                return Command(update={}, goto=END)
+                return Command(goto=END)
 
             if evaluation.need == "search":
                 return Command(
