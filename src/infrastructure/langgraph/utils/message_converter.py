@@ -23,6 +23,8 @@ class MessageConverter:
                 langchain_messages.append(HumanMessage(content=msg.content))
             elif msg.role == Role.ASSISTANT:
                 langchain_messages.append(AIMessage(content=msg.content))
+            elif msg.role == Role.SYSTEM:
+                langchain_messages.append(SystemMessage(content=msg.content))
             else:
                 raise ValueError(f"未対応のロールです: {msg.role}")
 
