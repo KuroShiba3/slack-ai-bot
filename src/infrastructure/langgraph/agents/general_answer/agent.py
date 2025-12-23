@@ -17,7 +17,6 @@ logger = get_logger(__name__)
 class PrivateState(TypedDict, total=False):
     """GeneralAnswerエージェント専用のプライベートステート"""
     task_id: str
-    task_plan: TaskPlan
 
 
 class GeneralAnswerState(BaseState, PrivateState):
@@ -46,7 +45,7 @@ class GeneralAnswerAgent:
 
         # configからノード固有のmodel_nameを取得（フォールバックあり）
         if config is None:
-            config = {}
+            config = RunnableConfig()
         configurable = config.get("configurable", {})
         model_name = configurable.get("execute_task_model", configurable.get("default_model", "gemini-2.0-flash"))
 
@@ -83,8 +82,6 @@ class GeneralAnswerAgent:
             # タスクを完了
             task.complete(response.content)
 
-            # 空のupdateで「ステートを変更しない」ことを明示
-            # これにより並列実行時のステートマージ衝突を回避
             return Command(update={}, goto=END)
 
         except Exception as e:
