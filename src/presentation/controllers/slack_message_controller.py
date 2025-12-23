@@ -5,7 +5,7 @@ from slack_bolt.async_app import AsyncAck
 from ...application.usecase.answer_to_user_request_usecase import (
     AnswerToUserRequestUseCase,
 )
-from ...infrastructure.slack.slack_message_service import SlackMessageService
+from ...infrastructure.external.slack.slack_message_service import SlackMessageService
 from ...log.logger import get_logger
 from ..mapper.slack_request_mapper import SlackRequestMapper
 
