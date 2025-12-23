@@ -1,20 +1,28 @@
 import asyncio
-
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, END
 
 from ....domain.model import ChatSession, WorkflowResult
-from ....domain.service.workflow_service import IWorkflowService
-from ....log import get_logger
+from ....domain.service import (
+    TaskPlanningService,
+    GeneralAnswerService,
+    SearchQueryGenerationService,
+    TaskResultGenerationService,
+    TaskResultEvaluationService,
+    AnswerGenerationService
+)
 from ....config import GOOGLE_API_KEY, GOOGLE_CSE_ID
-from ...llm import ModelFactory
-from ...slack import SlackMessageService
-from ..agents.supervisor.agent import SupervisorAgent
-from ..agents.general_answer.agent import GeneralAnswerAgent
-from ..agents.web_search.agent import WebSearchAgent
+from ....log import get_logger
+from ...external.llm import ModelFactory, LangChainLLMClient
+from ...external.web_search import GoogleSearchClient
+from ..agents import SupervisorAgent, WebSearchAgent, GeneralAnswerAgent
+from .state import BaseState
 
 logger = get_logger(__name__)
 
-class LangGraphWorkflowService(IWorkflowService):
+
+class LangGraphWorkflowService:
+    """LangGraphを使用したワークフローサービス"""
+
     _graph = None
     _graph_lock = asyncio.Lock()
     _graph_semaphore = asyncio.Semaphore(60)
@@ -22,12 +30,47 @@ class LangGraphWorkflowService(IWorkflowService):
     def __init__(
         self,
         model_factory: ModelFactory,
-        slack_service: SlackMessageService,
         model_name: str = "gemini-2.0-flash"
     ):
         self._model_factory = model_factory
-        self._slack_service = slack_service
         self._model_name = model_name
+
+        # LLMクライアントを作成
+        llm_client = LangChainLLMClient(
+            model_factory=model_factory,
+            default_model=model_name
+        )
+
+        # 検索クライアントを作成
+        search_client = GoogleSearchClient(
+            google_api_key=GOOGLE_API_KEY,
+            google_cse_id=GOOGLE_CSE_ID
+        )
+
+        # ドメインサービスを初期化
+        task_planning_service = TaskPlanningService(llm_client)
+        general_answer_service = GeneralAnswerService(llm_client)
+        search_query_service = SearchQueryGenerationService(llm_client)
+        task_result_service = TaskResultGenerationService(llm_client)
+        task_evaluation_service = TaskResultEvaluationService(llm_client)
+        answer_generation_service = AnswerGenerationService(llm_client)
+
+        # エージェントを初期化
+        self.supervisor_agent = SupervisorAgent(
+            task_planning_service=task_planning_service,
+            answer_generation_service=answer_generation_service
+        )
+
+        self.web_search_agent = WebSearchAgent(
+            search_query_service=search_query_service,
+            task_result_service=task_result_service,
+            task_evaluation_service=task_evaluation_service,
+            search_client=search_client
+        )
+
+        self.general_answer_agent = GeneralAnswerAgent(
+            general_answer_service=general_answer_service
+        )
 
     async def _get_graph(self) -> StateGraph:
         if self._graph is None:
@@ -66,21 +109,20 @@ class LangGraphWorkflowService(IWorkflowService):
 
     def build_graph(self) -> StateGraph:
         """LangGraphのグラフを構築"""
+        graph = StateGraph(BaseState)
 
-        supervisor_agent = SupervisorAgent(self._model_factory)
-        general_answer_agent = GeneralAnswerAgent(self._model_factory)
-        web_search_agent = WebSearchAgent(
-            model_factory=self._model_factory,
-            google_api_key=GOOGLE_API_KEY,
-            google_cse_id=GOOGLE_CSE_ID
-        )
+        # Supervisorエージェントのノード
+        graph.add_node("plan_tasks", self.supervisor_agent.plan_tasks)
+        graph.add_node("generate_final_answer", self.supervisor_agent.generate_final_answer)
 
-        general_answer_graph = general_answer_agent.build_graph()
-        web_search_graph = web_search_agent.build_graph()
+        # 各エージェントをサブグラフとしてAgentNameで登録
+        graph.add_node("general_answer", self.general_answer_agent.build_graph())
+        graph.add_node("web_search", self.web_search_agent.build_graph())
 
-        graph = supervisor_agent.build_graph(
-            general_answer_graph=general_answer_graph,
-            web_search_graph=web_search_graph
-        )
+        # エントリーポイント
+        graph.set_entry_point("plan_tasks")
 
-        return graph
+        graph.add_edge("general_answer", "generate_final_answer")
+        graph.add_edge("web_search", "generate_final_answer")
+
+        return graph.compile()
