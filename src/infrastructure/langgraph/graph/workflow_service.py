@@ -17,7 +17,6 @@ logger = get_logger(__name__)
 class LangGraphWorkflowService(IWorkflowService):
     _graph = None
     _graph_lock = asyncio.Lock()
-    _checkpointer_lock = asyncio.Lock()
     _graph_semaphore = asyncio.Semaphore(60)
 
     def __init__(
@@ -49,7 +48,6 @@ class LangGraphWorkflowService(IWorkflowService):
                     initial_state,
                     {
                         "configurable": {
-                            "thread_id": context.get("thread_id", ""),
                             "default_model": self._model_name
                         }
                     }
@@ -73,7 +71,6 @@ class LangGraphWorkflowService(IWorkflowService):
         general_answer_agent = GeneralAnswerAgent(self._model_factory)
         web_search_agent = WebSearchAgent(
             model_factory=self._model_factory,
-            slack_service=self._slack_service,
             google_api_key=GOOGLE_API_KEY,
             google_cse_id=GOOGLE_CSE_ID
         )
