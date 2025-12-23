@@ -1,6 +1,6 @@
 from ...domain.model import ChatSession
 from ...domain.repository import IChatSessionRepository
-from ...domain.service.workflow_service import IWorkflowService
+from ...domain.service.interfaces.workflow_service import IWorkflowService
 from ..dto.answer_to_user_request_usecase import (
     AnswerToUserRequestInput,
     AnswerToUserRequestOutput,
