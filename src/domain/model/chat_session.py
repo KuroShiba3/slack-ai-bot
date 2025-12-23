@@ -72,17 +72,47 @@ class ChatSession:
                 return str(message.id)
         return None
 
-    def add_user_message(self, content: str) -> Message:
-        """ユーザーからのメッセージを追加"""
-        message = Message.create_user_message(content)
-        self._messages.append(message)
-        return message
+    def add_user_message(self, content: str | Message) -> Message:
+        """ユーザーからのメッセージを追加
 
-    def add_assistant_message(self, content: str) -> Message:
-        """アシスタントからのメッセージを追加"""
-        message = Message.create_assistant_message(content)
-        self._messages.append(message)
-        return message
+        Args:
+            content: メッセージの内容（文字列）またはMessageオブジェクト
+
+        Returns:
+            追加されたMessageオブジェクト
+        """
+        if isinstance(content, Message):
+            # Messageオブジェクトの場合はロールを確認して追加
+            if content.role != Role.USER:
+                raise ValueError("USER以外のメッセージは追加できません")
+            self._messages.append(content)
+            return content
+        else:
+            # strの場合は新しいMessageを作成
+            message = Message.create_user_message(content)
+            self._messages.append(message)
+            return message
+
+    def add_assistant_message(self, content: str | Message) -> Message:
+        """アシスタントからのメッセージを追加
+
+        Args:
+            content: メッセージの内容（文字列）またはMessageオブジェクト
+
+        Returns:
+            追加されたMessageオブジェクト
+        """
+        if isinstance(content, Message):
+            # Messageオブジェクトの場合はロールを確認して追加
+            if content.role != Role.ASSISTANT:
+                raise ValueError("ASSISTANT以外のメッセージは追加できません")
+            self._messages.append(content)
+            return content
+        else:
+            # strの場合は新しいMessageを作成
+            message = Message.create_assistant_message(content)
+            self._messages.append(message)
+            return message
 
     def add_task_plan(self, task_plan: TaskPlan) -> None:
         """タスク計画を追加"""
