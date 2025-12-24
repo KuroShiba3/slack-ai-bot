@@ -56,8 +56,8 @@ class ChatSession:
                 return message
         return None
 
-    def last_assistant_message_id(self) -> Message | None:
-        """直近のアシスタントメッセージを取得"""
+    def last_assistant_message_id(self) -> str | None:
+        """直近のアシスタントメッセージのIDを取得"""
         for message in reversed(self._messages):
             if message.role == Role.ASSISTANT:
                 return str(message.id)
@@ -69,9 +69,9 @@ class ChatSession:
             if content.role != Role.USER:
                 raise ValueError("USER以外のメッセージは追加できません")
             self._messages.append(content)
-
-        message = Message.create_user_message(content)
-        self._messages.append(message)
+        else:
+            message = Message.create_user_message(content)
+            self._messages.append(message)
 
     def add_assistant_message(self, content: str | Message):
         """アシスタントからのメッセージを追加"""
@@ -79,9 +79,9 @@ class ChatSession:
             if content.role != Role.ASSISTANT:
                 raise ValueError("ASSISTANT以外のメッセージは追加できません")
             self._messages.append(content)
-
-        message = Message.create_assistant_message(content)
-        self._messages.append(message)
+        else:
+            message = Message.create_assistant_message(content)
+            self._messages.append(message)
 
     def add_task_plan(self, task_plan: TaskPlan):
         """タスク計画を追加"""

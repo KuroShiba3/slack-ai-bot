@@ -20,7 +20,7 @@ class Feedback:
         self._updated_at = updated_at
 
     @classmethod
-    def create(cls, user_id: str, message_id: str, feedback: bool) -> "Feedback":
+    def create(cls, user_id: str, message_id: UUID, feedback: bool) -> "Feedback":
         created_at = datetime.now()
         updated_at = created_at
         return cls(
@@ -35,9 +35,9 @@ class Feedback:
     @classmethod
     def reconstruct(
         cls,
-        id: str,
-        user_id: int,
-        message_id: str,
+        id: UUID,
+        user_id: str,
+        message_id: UUID,
         feedback: bool,
         created_at: datetime,
         updated_at: datetime,
@@ -56,11 +56,11 @@ class Feedback:
         return self._id
 
     @property
-    def user_id(self) -> int:
+    def user_id(self) -> str:
         return self._user_id
 
     @property
-    def message_id(self) -> str:
+    def message_id(self) -> UUID:
         return self._message_id
 
     @property

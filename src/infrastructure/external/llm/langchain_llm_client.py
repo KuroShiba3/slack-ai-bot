@@ -35,7 +35,7 @@ class LangChainLLMClient(LLMClient):
         model = self._model_factory.create(self._default_model)
         response = await model.ainvoke(langchain_messages)
 
-        return response.content
+        return response.content  # type: ignore
 
     async def generate_with_structured_output(
         self, messages: list[Message], response_model: type[T]
@@ -55,4 +55,4 @@ class LangChainLLMClient(LLMClient):
         # モデルを作成して構造化出力
         model = self._model_factory.create(self._default_model)
         structured_model = model.with_structured_output(response_model)
-        return await structured_model.ainvoke(langchain_messages)
+        return await structured_model.ainvoke(langchain_messages)  # type: ignore

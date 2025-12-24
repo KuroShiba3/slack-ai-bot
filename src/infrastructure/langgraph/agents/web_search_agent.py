@@ -173,4 +173,4 @@ class WebSearchAgent:
         # エントリーポイント
         graph.set_entry_point("generate_search_queries")
 
-        return graph.compile()
+        return graph.compile()  # type: ignore

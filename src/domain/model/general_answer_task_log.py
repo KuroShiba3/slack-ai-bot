@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -19,6 +20,8 @@ class GeneralAnswerTaskLog:
         """すべての試行を取得"""
         return self._attempts
 
-    def add_attempt(self, response: str) -> None:
+    def add_attempt(self, **kwargs: Any) -> None:
         """生成試行を記録"""
-        self._attempts.append(GenerationAttempt(response=response))
+        response = kwargs.get("response")
+        if response is not None:
+            self._attempts.append(GenerationAttempt(response=response))

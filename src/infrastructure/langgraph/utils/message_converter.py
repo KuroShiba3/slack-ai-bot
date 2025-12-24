@@ -41,9 +41,9 @@ class MessageConverter:
             ドメインモデルのMessage
         """
         if isinstance(message, HumanMessage):
-            return Message.create_user_message(message.content)
+            return Message.create_user_message(message.content)  # type: ignore
         if isinstance(message, AIMessage):
-            return Message.create_assistant_message(message.content)
+            return Message.create_assistant_message(message.content)  # type: ignore
         if isinstance(message, SystemMessage):
-            return Message.create_system_message(message.content)
+            return Message.create_system_message(message.content)  # type: ignore
         raise ValueError(f"未対応のメッセージタイプです: {type(message)}")

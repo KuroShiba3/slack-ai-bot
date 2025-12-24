@@ -43,5 +43,5 @@ class AnswerToUserRequestUseCase:
 
         # 回答を返す
         return AnswerToUserRequestOutput(
-            answer=result.answer, message_id=chat_session.last_assistant_message_id()
+            answer=result.answer, message_id=chat_session.last_assistant_message_id() or ""
         )

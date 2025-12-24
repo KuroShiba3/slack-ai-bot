@@ -39,7 +39,9 @@ class LangGraphWorkflowService:
             model_factory=model_factory, default_model=model_name
         )
 
-        # 検索クライアントを作成
+        # 検索クライアントを作成（環境変数チェック）
+        if not GOOGLE_API_KEY or not GOOGLE_CSE_ID:
+            raise ValueError("Google Search APIの環境変数が設定されていません")
         search_client = GoogleSearchClient(
             google_api_key=GOOGLE_API_KEY, google_cse_id=GOOGLE_CSE_ID
         )
@@ -81,7 +83,7 @@ class LangGraphWorkflowService:
             try:
                 initial_state = {"chat_session": chat_session, "context": context}
                 graph = await self._get_graph()
-                result = await graph.ainvoke(
+                result = await graph.ainvoke(  # type: ignore
                     initial_state, {"configurable": {"default_model": self._model_name}}
                 )
                 answer = result.get("answer", "")
@@ -107,8 +109,8 @@ class LangGraphWorkflowService:
         )
 
         # 各エージェントをサブグラフとしてAgentNameで登録
-        graph.add_node("general_answer", self.general_answer_agent.build_graph())
-        graph.add_node("web_search", self.web_search_agent.build_graph())
+        graph.add_node("general_answer", self.general_answer_agent.build_graph())  # type: ignore
+        graph.add_node("web_search", self.web_search_agent.build_graph())  # type: ignore
 
         # エントリーポイント
         graph.set_entry_point("plan_tasks")
@@ -116,4 +118,4 @@ class LangGraphWorkflowService:
         graph.add_edge("general_answer", "generate_final_answer")
         graph.add_edge("web_search", "generate_final_answer")
 
-        return graph.compile()
+        return graph.compile()  # type: ignore

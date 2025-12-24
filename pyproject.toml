@@ -27,6 +27,7 @@ dependencies = [
     "watchfiles>=1.1.1",
     "yoyo-migrations>=9.0.0",
     "ruff>=0.14.9",
+    "mypy>=1.19.1",
 ]
 
 [dependency-groups]
@@ -116,4 +117,68 @@ quote-style = "double"        # ダブルクォート使用
 indent-style = "space"        # スペースでインデント
 skip-magic-trailing-comma = false  # 末尾カンマを保持
 line-ending = "auto"          # 改行コードは自動検出
+
+[tool.mypy]
+# 基本設定
+python_version = "3.12"
+
+# 段階的導入のため緩い設定から始める
+warn_return_any = false          # Any型の警告を無効
+warn_unused_configs = true
+check_untyped_defs = false       # 型なし関数のチェックを無効
+no_implicit_optional = false     # Optional推論を許可
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = false           # return警告を無効
+warn_unreachable = false         # 到達不能コード警告を無効
+
+# 緩い設定（段階的に厳格化予定）
+disallow_untyped_defs = false    # 型ヒントなし関数を許可
+disallow_any_generics = false    # ジェネリクスのAny使用を許可
+allow_redefinition = true        # 変数の再定義を許可
+allow_untyped_calls = true       # 型なし関数呼び出しを許可
+
+# インポート設定
+ignore_missing_imports = true
+show_error_codes = true
+pretty = true
+
+# Pydanticプラグイン
+plugins = ["pydantic.mypy"]
+
+# サードパーティライブラリ除外
+[[tool.mypy.overrides]]
+module = [
+    "slack_bolt.*",
+    "slack_sdk.*",
+    "langchain.*",
+    "langchain_community.*",
+    "langchain_google_genai.*",
+    "langchain_google_community.*",
+    "langgraph.*",
+    "google.cloud.*",
+    "bs4.*",
+    "yoyo.*",
+    "psycopg.*",
+    "psycopg2.*",
+    "uvicorn.*",
+]
+ignore_missing_imports = true
+ignore_errors = true  # 外部ライブラリ関連のエラーを無視
+
+# LangGraph/LangChain統合部分は緩い設定
+[[tool.mypy.overrides]]
+module = [
+    "src.infrastructure.langgraph.*",
+    "src.infrastructure.external.llm.*",
+]
+check_untyped_defs = false
+warn_return_any = false
+warn_unused_ignores = false
+
+# テストは緩い設定
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_untyped_calls = false
 

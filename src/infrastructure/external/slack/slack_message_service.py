@@ -236,7 +236,7 @@ class SlackMessageService:
                 timestamp=timestamp,
             )
 
-            message = response.get("message", {})
+            message: dict = response.get("message", {})
             reactions = message.get("reactions", [])
 
             return any(reaction["name"] == reaction_name for reaction in reactions)

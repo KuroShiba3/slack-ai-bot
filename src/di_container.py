@@ -20,6 +20,10 @@ class DIContainer:
     """依存性注入コンテナ"""
 
     def __init__(self, slack_client: AsyncWebClient):
+        # 環境変数のチェック
+        if not GOOGLE_API_KEY:
+            raise ValueError("GOOGLE_API_KEY環境変数が設定されていません")
+
         # インフラストラクチャ層
         self._model_factory = ModelFactory(google_api_key=GOOGLE_API_KEY)
         self._slack_service = SlackMessageService(slack_client=slack_client)

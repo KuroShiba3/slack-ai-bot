@@ -61,4 +61,4 @@ class GeneralAnswerAgent:
         # エントリーポイント
         graph.set_entry_point("generate_answer")
 
-        return graph.compile()
+        return graph.compile()  # type: ignore

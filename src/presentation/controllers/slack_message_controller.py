@@ -31,19 +31,21 @@ class SlackMessageController:
 
         event = body.get("event", {})
         slack_dto = self._mapper.from_event(event)
-        if slack_dto.event_id in self._processed_events:
+        if slack_dto.event_id and slack_dto.event_id in self._processed_events:
             logger.debug(f"重複したイベントをスキップしました: {slack_dto.event_id}")
             return
-        self._processed_events.add(slack_dto.event_id)
+        if slack_dto.event_id:
+            self._processed_events.add(slack_dto.event_id)
 
         if self._mapper.is_bot_message(slack_dto):
             logger.debug("ボットメッセージを無視します")
             return
 
         try:
-            await self._slack_service.add_reaction(
-                slack_dto.channel_id, slack_dto.message_ts, "eyes"
-            )
+            if slack_dto.channel_id and slack_dto.message_ts:
+                await self._slack_service.add_reaction(
+                    slack_dto.channel_id, slack_dto.message_ts, "eyes"
+                )
 
             input_dto = self._mapper.to_application_input(slack_dto)
             output_dto = await self._use_case.execute(input_dto)
@@ -55,9 +57,10 @@ class SlackMessageController:
                 message_id=output_dto.message_id,
             )
 
-            await self._slack_service.remove_reaction(
-                slack_dto.channel_id, slack_dto.message_ts, "eyes"
-            )
+            if slack_dto.channel_id and slack_dto.message_ts:
+                await self._slack_service.remove_reaction(
+                    slack_dto.channel_id, slack_dto.message_ts, "eyes"
+                )
         except Exception as e:
             logger.error(f"メッセージ処理でエラーが発生しました: {e}")
 
