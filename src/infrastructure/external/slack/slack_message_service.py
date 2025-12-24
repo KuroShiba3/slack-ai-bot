@@ -78,7 +78,9 @@ class SlackMessageService:
 
         truncated_text = text[:truncate_point]
 
-        logger.warning(f"メッセージが長すぎるため切り詰めました (元の長さ: {original_length}, 切り詰め後: {len(truncated_text)})")
+        logger.warning(
+            f"メッセージが長すぎるため切り詰めました (元の長さ: {original_length}, 切り詰め後: {len(truncated_text)})"
+        )
 
         return truncated_text, True
 
@@ -237,10 +239,7 @@ class SlackMessageService:
             message = response.get("message", {})
             reactions = message.get("reactions", [])
 
-            for reaction in reactions:
-                if reaction["name"] == reaction_name:
-                    return True
-            return False
+            return any(reaction["name"] == reaction_name for reaction in reactions)
 
         except SlackApiError as e:
             logger.error(f"リアクション取得エラー: {e.response['error']}")

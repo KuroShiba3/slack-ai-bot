@@ -6,7 +6,7 @@ from ....domain.model import ChatSession, TaskPlan
 def take_first(left, right):
     """複数の値が来た場合、最初の値を採用する
 
-    mutableなドメインオブジェクト（ChatSession, TaskPlan）は参照渡しなので
+    mutableなドメインオブジェクト(ChatSession, TaskPlan)は参照渡しなので
     複数のノードから返されても実際には同じオブジェクト。
     最初の値を取ることで、変更された同じオブジェクトを保持する。
     """

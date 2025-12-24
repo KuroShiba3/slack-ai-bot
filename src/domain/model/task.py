@@ -11,10 +11,12 @@ class AgentName(Enum):
     GENERAL_ANSWER = "general_answer"
     WEB_SEARCH = "web_search"
 
+
 class TaskStatus(Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
+
 
 class Task:
     def __init__(
@@ -51,7 +53,7 @@ class Task:
             agent_name=AgentName.WEB_SEARCH,
             task_log=WebSearchTaskLog.create(),
             status=TaskStatus.IN_PROGRESS,
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
 
     @classmethod
@@ -63,7 +65,7 @@ class Task:
             agent_name=AgentName.GENERAL_ANSWER,
             task_log=GeneralAnswerTaskLog.create(),
             status=TaskStatus.IN_PROGRESS,
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
 
     @classmethod

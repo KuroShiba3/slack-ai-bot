@@ -20,38 +20,34 @@ class GeneralAnswerService:
 ## Slack mrkdwn形式:
 - 太字: `*テキスト*` の形式で囲む
 - 箇条書き: 各行の先頭に `• ` を使用
-- 見出し記号（`#`, `##`, `###`）は使用しない
+- 見出し記号(`#`, `##`, `###`)は使用しない
 
 ## 制約:
-- 学習済み知識（2025年1月まで）の範囲内で回答してください
+- 学習済み知識(2025年1月まで)の範囲内で回答してください
 - 最新情報が必要な場合や不確実な情報は推測せず、素直にその旨を伝えてください
 - 「BRANU株式会社の社内アシスタントAIです」のような自己紹介は回答に含めないでください"""
 
     def __init__(self, llm_client: LLMClient):
         self.llm_client = llm_client
 
-    async def execute(
-        self,
-        chat_session: ChatSession,
-        task: Task
-    ):
+    async def execute(self, chat_session: ChatSession, task: Task):
         """タスクを実行して回答を生成し、タスクを完了させる
 
         Args:
-            chat_session: チャットセッション（会話履歴を含む）
+            chat_session: チャットセッション(会話履歴を含む)
             task: 実行するタスク
 
         Returns:
             完了済みのタスク
         """
-        # タスク用のプロンプトを構築（日付情報を含む）
+        # タスク用のプロンプトを構築(日付情報を含む)
         task_prompt = self._build_task_prompt(task.description)
 
         # メッセージリストを構築
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
             *chat_session.messages,
-            Message.create_user_message(task_prompt)
+            Message.create_user_message(task_prompt),
         ]
 
         # LLMで回答生成

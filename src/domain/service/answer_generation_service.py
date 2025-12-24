@@ -13,18 +13,18 @@ class AnswerGenerationService:
 
 2. **簡潔さと適切な情報量**:
     - 質問の範囲内で重要な情報を過不足なく提供
-    - 見出しは最小限（サブセクション「###」は使用しない）
+    - 見出しは最小限(サブセクション「###」は使用しない)
 
 3. **わかりやすさ**:
     - 簡潔で分かりやすい日本語
     - 箇条書きは3〜5項目程度に抑える
 
-4. **Slack mrkdwn形式（厳守）**:
+4. **Slack mrkdwn形式(厳守)**:
     - 太字: `*テキスト*`
-    - 箇条書き: `• `（ネストは `    • `）
-    - 見出し記号（#）は使用しない
+    - 箇条書き: `• `(ネストは `    • `)
+    - 見出し記号(#)は使用しない
 
-5. **情報源の記載（必須）**:
+5. **情報源の記載(必須)**:
     - **URLやファイル名の創作・推測は絶対禁止**
     - タスク結果のURLをそのまま正確に使用
     - 引用番号: [0], [1] のように角括弧で囲む
@@ -39,8 +39,8 @@ class AnswerGenerationService:
         """タスク実行結果から最終回答を生成する
 
         Args:
-            chat_session: チャットセッション（会話履歴を含む）
-            task_plan: 実行済みのタスク計画（タスク結果を含む）
+            chat_session: チャットセッション(会話履歴を含む)
+            task_plan: 実行済みのタスク計画(タスク結果を含む)
 
         Returns:
             アシスタントメッセージとしての最終回答
@@ -55,15 +55,14 @@ class AnswerGenerationService:
 
         # プロンプトを構築
         human_prompt = self._build_human_prompt(
-            user_question=latest_message.content,
-            task_results=task_results_text
+            user_question=latest_message.content, task_results=task_results_text
         )
 
         # メッセージリストを構築
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
             *chat_session.messages[:-1],  # 最後のユーザーメッセージを除く会話履歴
-            Message.create_user_message(human_prompt)  # タスク結果を含むプロンプト
+            Message.create_user_message(human_prompt),  # タスク結果を含むプロンプト
         ]
 
         # LLMで最終回答を生成

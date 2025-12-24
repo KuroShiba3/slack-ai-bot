@@ -3,7 +3,15 @@ from uuid import UUID, uuid4
 
 
 class Feedback:
-    def __init__(self, id: UUID, user_id: str, message_id: UUID, feedback: bool, created_at: datetime, updated_at: datetime):
+    def __init__(
+        self,
+        id: UUID,
+        user_id: str,
+        message_id: UUID,
+        feedback: bool,
+        created_at: datetime,
+        updated_at: datetime,
+    ):
         self._id = id
         self._user_id = user_id
         self._message_id = message_id
@@ -15,11 +23,33 @@ class Feedback:
     def create(cls, user_id: str, message_id: str, feedback: bool) -> "Feedback":
         created_at = datetime.now()
         updated_at = created_at
-        return cls(id=uuid4(), user_id=user_id, message_id=message_id, feedback=feedback, created_at=created_at, updated_at=updated_at)
+        return cls(
+            id=uuid4(),
+            user_id=user_id,
+            message_id=message_id,
+            feedback=feedback,
+            created_at=created_at,
+            updated_at=updated_at,
+        )
 
     @classmethod
-    def reconstruct(cls, id: str, user_id: int, message_id: str, feedback: bool, created_at: datetime, updated_at: datetime) -> "Feedback":
-        return cls(id=id, user_id=user_id, message_id=message_id, feedback=feedback, created_at=created_at, updated_at=updated_at)
+    def reconstruct(
+        cls,
+        id: str,
+        user_id: int,
+        message_id: str,
+        feedback: bool,
+        created_at: datetime,
+        updated_at: datetime,
+    ) -> "Feedback":
+        return cls(
+            id=id,
+            user_id=user_id,
+            message_id=message_id,
+            feedback=feedback,
+            created_at=created_at,
+            updated_at=updated_at,
+        )
 
     @property
     def id(self) -> UUID:

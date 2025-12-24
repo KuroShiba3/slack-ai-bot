@@ -29,8 +29,7 @@ class GoogleSearchClient:
         """
         try:
             search = GoogleSearchAPIWrapper(
-                google_api_key=self._google_api_key,
-                google_cse_id=self._google_cse_id
+                google_api_key=self._google_api_key, google_cse_id=self._google_cse_id
             )
 
             results = search.results(query, num_results=num_results)
@@ -40,27 +39,23 @@ class GoogleSearchClient:
 
             search_results: list[SearchResult] = []
             for result in results:
-                url = result['link']
-                title = result['title']
-                snippet = result.get('snippet', '')
+                url = result["link"]
+                title = result["title"]
+                snippet = result.get("snippet", "")
 
                 try:
                     # Webページを取得してクリーニング
                     content = await self._fetch_and_clean_webpage(url)
 
-                    search_results.append(SearchResult(
-                        url=url,
-                        title=title,
-                        content=content
-                    ))
+                    search_results.append(
+                        SearchResult(url=url, title=title, content=content)
+                    )
                 except Exception as e:
                     logger.warning(f"Webページ取得エラー ({url}): {e!s}")
                     # エラー時はスニペットを使用
-                    search_results.append(SearchResult(
-                        url=url,
-                        title=title,
-                        content=snippet
-                    ))
+                    search_results.append(
+                        SearchResult(url=url, title=title, content=snippet)
+                    )
 
             return search_results
 
@@ -73,10 +68,10 @@ class GoogleSearchClient:
 
         Args:
             url: WebページのURL
-            timeout: タイムアウト時間（秒）
+            timeout: タイムアウト時間(秒)
 
         Returns:
-            クリーニングされたテキスト（最大5000文字）
+            クリーニングされたテキスト(最大5000文字)
         """
         loader = WebBaseLoader(url)
         load_task = asyncio.to_thread(loader.load)
@@ -98,10 +93,10 @@ class GoogleSearchClient:
             クリーニングされたテキスト
         """
         # 連続する改行を2つの改行に統一
-        text = re.sub(r'\n\s*\n+', '\n\n', text)
+        text = re.sub(r"\n\s*\n+", "\n\n", text)
 
         # 各行をトリムして空行を削除
-        lines = [line.strip() for line in text.split('\n')]
+        lines = [line.strip() for line in text.split("\n")]
         lines = [line for line in lines if line]
 
-        return '\n'.join(lines)
+        return "\n".join(lines)

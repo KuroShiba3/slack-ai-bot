@@ -7,10 +7,12 @@ class SearchResult:
     title: str
     content: str
 
+
 @dataclass
 class SearchAttempt:
     query: str
     results: list[SearchResult]
+
 
 class WebSearchTaskLog:
     def __init__(self, attempts: list[SearchAttempt]):
@@ -27,10 +29,7 @@ class WebSearchTaskLog:
 
     def add_attempt(self, query: str, results: list[SearchResult]) -> None:
         """検索試行を記録"""
-        self._attempts.append(SearchAttempt(
-            query=query,
-            results=results
-        ))
+        self._attempts.append(SearchAttempt(query=query, results=results))
 
     def get_all_queries(self) -> list[str]:
         """すべての検索クエリを取得"""

@@ -62,27 +62,32 @@ select = [
     "E",    # pycodestyle errors
     "W",    # pycodestyle warnings
     "F",    # pyflakes
-    "I",    # isort（import順序）
+    "I",    # isort(import順序)
     "N",    # pep8-naming
-    "UP",   # pyupgrade（古い構文を最新に）
-    "B",    # flake8-bugbear（バグになりやすいコード）
-    "SIM",  # flake8-simplify（簡潔なコード）
-    "C4",   # flake8-comprehensions（内包表記の最適化）
-    "DTZ",  # flake8-datetimez（datetime）
-    "T20",  # flake8-print（print文の検出）
-    "RET",  # flake8-return（return文の改善）
-    "PTH",  # flake8-use-pathlib（pathlibの使用推奨）
-    "ERA",  # eradicate（コメントアウトされたコード）
+    "UP",   # pyupgrade(古い構文を最新に)
+    "B",    # flake8-bugbear(バグになりやすいコード)
+    "SIM",  # flake8-simplify(簡潔なコード)
+    "C4",   # flake8-comprehensions(内包表記の最適化)
+    "DTZ",  # flake8-datetimez(datetime)
+    "T20",  # flake8-print(print文の検出)
+    "RET",  # flake8-return(return文の改善)
+    "PTH",  # flake8-use-pathlib(pathlibの使用推奨)
+    "ERA",  # eradicate(コメントアウトされたコード)
     "PL",   # Pylint
     "RUF",  # Ruff独自ルール
 ]
 
 # 無視するルール
 ignore = [
-    "E501",   # line-too-long（line-lengthで制御）
-    "B008",   # デフォルト引数での関数呼び出し（FastAPIで使用）
-    "N815",   # 変数名の大文字小文字混在（定数で使用）
-    "PLR0913", # 引数が多すぎる（5個まで許可）
+    "E501",   # line-too-long(line-lengthで制御)
+    "B008",   # デフォルト引数での関数呼び出し(FastAPIで使用)
+    "N815",   # 変数名の大文字小文字混在(定数で使用)
+    "PLR0913", # 引数が多すぎる(5個まで許可)
+    "DTZ005", # タイムゾーンなしdatetime.now()(ローカル時刻使用)
+    "ERA001", # コメントアウトされたコード(日本語コメントを誤検出)
+    "PLC0415", # 関数内import(遅延import許可)
+    "RUF003", # 曖昧な文字(日本語コメント許可)
+    "RUF012", # クラス変数のClassVar(簡潔性のため省略)
 ]
 
 # ファイル別の設定
@@ -102,7 +107,7 @@ section-order = [
 ]
 
 [tool.ruff.lint.pydocstyle]
-# docstringのスタイル（Google style）
+# docstringのスタイル(Google style)
 convention = "google"
 
 [tool.ruff.format]

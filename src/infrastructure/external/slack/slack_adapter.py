@@ -15,7 +15,9 @@ class SlackAdapter:
 
     async def start_socket_mode(self):
         if not SLACK_APP_TOKEN:
-            raise ValueError("環境変数 SLACK_APP_TOKEN が設定されていません。Socket Mode を使用するには必要です。")
+            raise ValueError(
+                "環境変数 SLACK_APP_TOKEN が設定されていません。Socket Mode を使用するには必要です。"
+            )
 
         handler = AsyncSocketModeHandler(self.app, SLACK_APP_TOKEN)
         await handler.start_async()
@@ -36,10 +38,8 @@ class SlackAdapter:
 
     def _create_slack_app(self) -> AsyncApp:
         if not SLACK_BOT_TOKEN or not SLACK_SIGNING_SECRET:
-            raise ValueError("環境変数 SLACK_BOT_TOKEN または SLACK_SIGNING_SECRET が設定されていません。")
+            raise ValueError(
+                "環境変数 SLACK_BOT_TOKEN または SLACK_SIGNING_SECRET が設定されていません。"
+            )
 
-        return AsyncApp(
-            token=SLACK_BOT_TOKEN,
-            signing_secret=SLACK_SIGNING_SECRET
-        )
-
+        return AsyncApp(token=SLACK_BOT_TOKEN, signing_secret=SLACK_SIGNING_SECRET)

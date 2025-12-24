@@ -6,11 +6,13 @@ from ...model import ChatSession, WorkflowResult
 
 class IWorkflowService(ABC):
     @abstractmethod
-    async def execute(self, chat_session: ChatSession, context: dict[str, Any]) -> WorkflowResult:
+    async def execute(
+        self, chat_session: ChatSession, context: dict[str, Any]
+    ) -> WorkflowResult:
         """チャットセッションを元にワークフローを実行し、結果を返す
 
         Args:
-            chat_session: チャットセッション（ユーザーメッセージを含む）
+            chat_session: チャットセッション(ユーザーメッセージを含む)
             context: 実行コンテキスト
 
         Returns:

@@ -8,6 +8,7 @@ class Role(Enum):
     ASSISTANT = "assistant"
     USER = "user"
 
+
 class Message:
     def __init__(self, id: UUID, role: Role, content: str, created_at: datetime):
         if not content.strip():
@@ -23,7 +24,9 @@ class Message:
         return cls(id=uuid4(), role=role, content=content, created_at=datetime.now())
 
     @classmethod
-    def reconstruct(cls, id: UUID, role: Role, content: str, created_at: datetime) -> "Message":
+    def reconstruct(
+        cls, id: UUID, role: Role, content: str, created_at: datetime
+    ) -> "Message":
         return cls(id=id, role=role, content=content, created_at=created_at)
 
     @classmethod

@@ -29,23 +29,19 @@ class LangGraphWorkflowService:
     _graph_semaphore = asyncio.Semaphore(60)
 
     def __init__(
-        self,
-        model_factory: ModelFactory,
-        model_name: str = "gemini-2.0-flash"
+        self, model_factory: ModelFactory, model_name: str = "gemini-2.0-flash"
     ):
         self._model_factory = model_factory
         self._model_name = model_name
 
         # LLMクライアントを作成
         llm_client = LangChainLLMClient(
-            model_factory=model_factory,
-            default_model=model_name
+            model_factory=model_factory, default_model=model_name
         )
 
         # 検索クライアントを作成
         search_client = GoogleSearchClient(
-            google_api_key=GOOGLE_API_KEY,
-            google_cse_id=GOOGLE_CSE_ID
+            google_api_key=GOOGLE_API_KEY, google_cse_id=GOOGLE_CSE_ID
         )
 
         # ドメインサービスを初期化
@@ -59,14 +55,14 @@ class LangGraphWorkflowService:
         # エージェントを初期化
         self.supervisor_agent = SupervisorAgent(
             task_planning_service=task_planning_service,
-            answer_generation_service=answer_generation_service
+            answer_generation_service=answer_generation_service,
         )
 
         self.web_search_agent = WebSearchAgent(
             search_query_service=search_query_service,
             task_result_service=task_result_service,
             task_evaluation_service=task_evaluation_service,
-            search_client=search_client
+            search_client=search_client,
         )
 
         self.general_answer_agent = GeneralAnswerAgent(
@@ -83,18 +79,10 @@ class LangGraphWorkflowService:
     async def execute(self, chat_session: ChatSession, context: dict) -> WorkflowResult:
         async with self._graph_semaphore:
             try:
-                initial_state = {
-                    "chat_session": chat_session,
-                    "context": context
-                }
+                initial_state = {"chat_session": chat_session, "context": context}
                 graph = await self._get_graph()
                 result = await graph.ainvoke(
-                    initial_state,
-                    {
-                        "configurable": {
-                            "default_model": self._model_name
-                        }
-                    }
+                    initial_state, {"configurable": {"default_model": self._model_name}}
                 )
                 answer = result.get("answer", "")
                 task_plan = result.get("task_plan")
@@ -114,7 +102,9 @@ class LangGraphWorkflowService:
 
         # Supervisorエージェントのノード
         graph.add_node("plan_tasks", self.supervisor_agent.plan_tasks)
-        graph.add_node("generate_final_answer", self.supervisor_agent.generate_final_answer)
+        graph.add_node(
+            "generate_final_answer", self.supervisor_agent.generate_final_answer
+        )
 
         # 各エージェントをサブグラフとしてAgentNameで登録
         graph.add_node("general_answer", self.general_answer_agent.build_graph())

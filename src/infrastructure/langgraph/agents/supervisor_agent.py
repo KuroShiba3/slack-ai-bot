@@ -15,7 +15,7 @@ class SupervisorAgent:
     def __init__(
         self,
         task_planning_service: TaskPlanningService,
-        answer_generation_service: AnswerGenerationService
+        answer_generation_service: AnswerGenerationService,
     ):
         self.task_planning_service = task_planning_service
         self.answer_generation_service = answer_generation_service
@@ -44,18 +44,17 @@ class SupervisorAgent:
                 }
 
                 if task.agent_name == AgentName.WEB_SEARCH:
-                    send_data.update({
-                        "attempt": 0,
-                        "feedback": None,
-                        "queries": None,
-                    })
+                    send_data.update(
+                        {
+                            "attempt": 0,
+                            "feedback": None,
+                            "queries": None,
+                        }
+                    )
 
                 sends.append(Send(task.agent_name.value, send_data))
 
-            return Command(
-                update={"task_plan": task_plan},
-                goto=sends
-            )
+            return Command(update={"task_plan": task_plan}, goto=sends)
 
         except Exception as e:
             logger.error(f"タスク計画生成でエラーが発生しました: {e!s}", exc_info=True)
@@ -73,9 +72,11 @@ class SupervisorAgent:
                 raise ValueError("TaskPlanが見つかりません")
 
             # 最終回答を生成
-            answer_message = await self.answer_generation_service.execute(chat_session, task_plan)
+            answer_message = await self.answer_generation_service.execute(
+                chat_session, task_plan
+            )
 
-            # ChatSessionに回答を追加（Messageオブジェクトを直接渡す）
+            # ChatSessionに回答を追加(Messageオブジェクトを直接渡す)
             chat_session.add_assistant_message(answer_message)
 
             logger.info("最終回答生成完了")

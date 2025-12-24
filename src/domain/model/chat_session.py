@@ -10,7 +10,7 @@ class ChatSession:
         id: str,
         messages: list[Message],
         task_plans: list[TaskPlan],
-        created_at: datetime
+        created_at: datetime,
     ):
         self._id = id
         self._messages = messages
@@ -19,12 +19,7 @@ class ChatSession:
 
     @classmethod
     def create(cls, id: str) -> "ChatSession":
-        return cls(
-            id=id,
-            messages=[],
-            task_plans=[],
-            created_at=datetime.now()
-        )
+        return cls(id=id, messages=[], task_plans=[], created_at=datetime.now())
 
     @classmethod
     def reconstruct(
@@ -32,13 +27,10 @@ class ChatSession:
         id: str,
         messages: list[Message],
         task_plans: list[TaskPlan],
-        created_at: datetime
+        created_at: datetime,
     ) -> "ChatSession":
         return cls(
-            id=id,
-            messages=messages,
-            task_plans=task_plans,
-            created_at=created_at
+            id=id, messages=messages, task_plans=task_plans, created_at=created_at
         )
 
     @property

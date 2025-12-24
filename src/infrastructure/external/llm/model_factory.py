@@ -23,5 +23,5 @@ class ModelFactory:
         return ChatGoogleGenerativeAI(
             model=model_name,
             google_api_key=self._google_api_key,
-            **self._default_config
+            **self._default_config,
         )

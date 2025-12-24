@@ -1,4 +1,5 @@
 """依存性注入コンテナ"""
+
 from slack_sdk.web.async_client import AsyncWebClient
 
 from .application.usecase.answer_to_user_request_usecase import (
@@ -26,14 +27,13 @@ class DIContainer:
 
         # ドメイン層
         self._workflow_service = LangGraphWorkflowService(
-            model_factory=self._model_factory,
-            model_name="gemini-2.0-flash"
+            model_factory=self._model_factory, model_name="gemini-2.0-flash"
         )
 
         # アプリケーション層
         self._use_case = AnswerToUserRequestUseCase(
             workflow_service=self._workflow_service,
-            chat_session_repository=self._chat_session_repository
+            chat_session_repository=self._chat_session_repository,
         )
 
         # プレゼンテーション層
@@ -41,7 +41,7 @@ class DIContainer:
         self._controller = SlackMessageController(
             use_case=self._use_case,
             mapper=self._mapper,
-            slack_service=self._slack_service
+            slack_service=self._slack_service,
         )
 
     @property

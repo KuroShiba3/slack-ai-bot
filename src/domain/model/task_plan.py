@@ -19,11 +19,7 @@ class TaskPlan:
 
     @classmethod
     def create(cls, message_id: UUID, tasks: list[Task]) -> "TaskPlan":
-        return cls(
-            id=uuid4(),
-            message_id=message_id,
-            tasks=tasks
-        )
+        return cls(id=uuid4(), message_id=message_id, tasks=tasks)
 
     @property
     def id(self) -> UUID:

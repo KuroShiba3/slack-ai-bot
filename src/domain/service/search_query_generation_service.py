@@ -35,23 +35,22 @@ class SearchQueryGenerationService:
     def __init__(self, llm_client: LLMClient):
         self.llm_client = llm_client
 
-    async def execute(
-        self,
-        task: Task,
-        feedback: str | None = None
-    ) -> list[str]:
+    async def execute(self, task: Task, feedback: str | None = None) -> list[str]:
         """タスクから検索クエリを生成する
 
         Args:
             task: 検索対象のタスク
-            feedback: 改善のためのフィードバック（オプション）
+            feedback: 改善のためのフィードバック(オプション)
 
         Returns:
-            生成された検索クエリのリスト（最大3個）
+            生成された検索クエリのリスト(最大3個)
         """
+
         # Pydanticモデルを定義
         class _SearchQueries(BaseModel):
-            queries: list[str] = Field(description="生成された検索クエリのリスト（最大3個）", max_length=3)
+            queries: list[str] = Field(
+                description="生成された検索クエリのリスト(最大3個)", max_length=3
+            )
             reason: str = Field(description="これらのクエリを選んだ理由")
 
         # タスクログから以前の検索クエリを取得
@@ -63,19 +62,18 @@ class SearchQueryGenerationService:
         human_prompt = self._build_human_prompt(
             task_description=task.description,
             previous_queries=previous_queries,
-            feedback=feedback
+            feedback=feedback,
         )
 
         # メッセージリストを構築
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
-            Message.create_user_message(human_prompt)
+            Message.create_user_message(human_prompt),
         ]
 
         # LLMで検索クエリを生成
         search_queries_result = await self.llm_client.generate_with_structured_output(
-            messages,
-            _SearchQueries
+            messages, _SearchQueries
         )
 
         return search_queries_result.queries
@@ -85,10 +83,7 @@ class SearchQueryGenerationService:
         return datetime.now().strftime("%Y年%m月%d日")
 
     def _build_human_prompt(
-        self,
-        task_description: str,
-        previous_queries: list[str],
-        feedback: str | None
+        self, task_description: str, previous_queries: list[str], feedback: str | None
     ) -> str:
         """ヒューマンプロンプトを構築する"""
         current_date = self._get_current_date()

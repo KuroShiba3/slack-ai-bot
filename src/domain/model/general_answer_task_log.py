@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class GenerationAttempt:
     response: str
 
+
 class GeneralAnswerTaskLog:
     def __init__(self, attempts: list[GenerationAttempt]):
         self._attempts = attempts
@@ -20,6 +21,4 @@ class GeneralAnswerTaskLog:
 
     def add_attempt(self, response: str) -> None:
         """生成試行を記録"""
-        self._attempts.append(
-                GenerationAttempt(response=response)
-            )
+        self._attempts.append(GenerationAttempt(response=response))

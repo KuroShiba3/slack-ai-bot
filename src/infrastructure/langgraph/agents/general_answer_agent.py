@@ -13,11 +13,13 @@ logger = get_logger(__name__)
 
 class GeneralAnswerPrivateState(TypedDict):
     """GeneralAnswerAgent専用のプライベートステートフィールド"""
+
     task: Task  # 親グラフから渡される
 
 
 class GeneralAnswerState(BaseState, GeneralAnswerPrivateState):
-    """GeneralAnswerAgent用の完全なステート（BaseState + プライベートフィールド）"""
+    """GeneralAnswerAgent用の完全なステート(BaseState + プライベートフィールド)"""
+
     pass
 
 

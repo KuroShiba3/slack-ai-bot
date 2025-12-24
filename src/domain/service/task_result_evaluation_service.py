@@ -39,7 +39,7 @@ class TaskResultEvaluationService:
         """タスク結果を評価する
 
         Args:
-            task: 評価対象のタスク（結果と検索結果を含む）
+            task: 評価対象のタスク(結果と検索結果を含む)
 
         Returns:
             評価結果
@@ -47,10 +47,12 @@ class TaskResultEvaluationService:
         if not task.result:
             raise ValueError("タスク結果が存在しません")
 
-        # LLM出力用のスキーマ（サービス内部の実装詳細）
+        # LLM出力用のスキーマ(サービス内部の実装詳細)
         class _TaskEvaluationSchema(BaseModel):
             is_satisfactory: bool = Field(description="タスク結果が十分か")
-            need: Literal["search", "generate"] | None = Field(description="改善が必要な場合の種類")
+            need: Literal["search", "generate"] | None = Field(
+                description="改善が必要な場合の種類"
+            )
             reason: str = Field(description="判断理由")
             feedback: str | None = Field(description="改善のためのフィードバック")
 
@@ -61,19 +63,18 @@ class TaskResultEvaluationService:
         human_prompt = self._build_human_prompt(
             task_description=task.description,
             task_result=task.result,
-            search_results=search_results
+            search_results=search_results,
         )
 
         # メッセージリストを構築
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
-            Message.create_user_message(human_prompt)
+            Message.create_user_message(human_prompt),
         ]
 
         # LLMで評価を生成
         llm_output = await self.llm_client.generate_with_structured_output(
-            messages,
-            _TaskEvaluationSchema
+            messages, _TaskEvaluationSchema
         )
 
         # ドメイン値オブジェクトに変換して返す
@@ -81,7 +82,7 @@ class TaskResultEvaluationService:
             is_satisfactory=llm_output.is_satisfactory,
             need=llm_output.need,
             reason=llm_output.reason,
-            feedback=llm_output.feedback
+            feedback=llm_output.feedback,
         )
 
     def _get_search_results_from_task(self, task: Task) -> list[SearchResult]:
@@ -98,13 +99,14 @@ class TaskResultEvaluationService:
     def _get_current_date(self) -> str:
         """現在の日付を取得する"""
         from datetime import datetime
+
         return datetime.now().strftime("%Y年%m月%d日")
 
     def _build_human_prompt(
         self,
         task_description: str,
         task_result: str,
-        search_results: list[SearchResult]
+        search_results: list[SearchResult],
     ) -> str:
         """ヒューマンプロンプトを構築する"""
         current_date = self._get_current_date()

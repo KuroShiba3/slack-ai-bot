@@ -16,7 +16,9 @@ class AnswerToUserRequestUseCase:
         self._workflow_service = workflow_service
         self._chat_session_repository = chat_session_repository
 
-    async def execute(self, input_dto: AnswerToUserRequestInput) -> AnswerToUserRequestOutput:
+    async def execute(
+        self, input_dto: AnswerToUserRequestInput
+    ) -> AnswerToUserRequestOutput:
         conversation_id = input_dto.context.get("conversation_id")
         if not conversation_id:
             raise ValueError("conversation_idがコンテキストに存在しません")
@@ -40,4 +42,6 @@ class AnswerToUserRequestUseCase:
         await self._chat_session_repository.save(chat_session)
 
         # 回答を返す
-        return AnswerToUserRequestOutput(answer=result.answer, message_id=chat_session.last_assistant_message_id())
+        return AnswerToUserRequestOutput(
+            answer=result.answer, message_id=chat_session.last_assistant_message_id()
+        )
