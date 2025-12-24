@@ -30,8 +30,6 @@ class Task:
     ):
         if not description:
             raise ValueError("タスクの説明が空です。")
-        if not agent_name:
-            raise ValueError("エージェント名が空です。")
         if not task_log:
             raise ValueError("タスクログが必要です。")
 
@@ -80,7 +78,6 @@ class Task:
         created_at: datetime,
         completed_at: datetime | None,
     ) -> "Task":
-        """既存のタスクを再構築"""
         return cls(
             id=id,
             description=description,
@@ -128,8 +125,10 @@ class Task:
         """タスクを完了し、結果を記録"""
         if self._status != TaskStatus.IN_PROGRESS:
             raise ValueError(f"実行中でないタスクは完了できません: {self._status}")
-        if not result:
-            raise ValueError("結果が空です。")
+
+        if not result or not result.strip():
+            self.fail("タスク実行結果が空でした")
+            return
 
         self._status = TaskStatus.COMPLETED
         self._result = result
@@ -142,10 +141,5 @@ class Task:
         self._completed_at = datetime.now()
 
     def add_log_attempt(self, **kwargs) -> None:
-        """試行をタスクログに追加
-
-        各タスクタイプに応じて適切なパラメータを渡す:
-        - Web検索タスク: query, results
-        - 一般回答タスク: response
-        """
+        """試行をタスクログに追加"""
         self._task_log.add_attempt(**kwargs)
