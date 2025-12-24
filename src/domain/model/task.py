@@ -2,9 +2,9 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
+from .general_answer_task_log import GeneralAnswerTaskLog
 from .task_log import TaskLog
 from .web_search_task_log import WebSearchTaskLog
-from .general_answer_task_log import GeneralAnswerTaskLog
 
 
 class AgentName(Enum):

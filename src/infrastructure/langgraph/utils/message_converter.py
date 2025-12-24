@@ -1,4 +1,4 @@
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 
 from ....domain.model import Message, Role
 
@@ -42,9 +42,8 @@ class MessageConverter:
         """
         if isinstance(message, HumanMessage):
             return Message.create_user_message(message.content)
-        elif isinstance(message, AIMessage):
+        if isinstance(message, AIMessage):
             return Message.create_assistant_message(message.content)
-        elif isinstance(message, SystemMessage):
+        if isinstance(message, SystemMessage):
             return Message.create_system_message(message.content)
-        else:
-            raise ValueError(f"未対応のメッセージタイプです: {type(message)}")
+        raise ValueError(f"未対応のメッセージタイプです: {type(message)}")

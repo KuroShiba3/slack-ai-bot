@@ -1,14 +1,15 @@
 from typing import TypedDict
+
 from langgraph.graph import END, StateGraph
 from langgraph.types import Command
 
-from ....domain.service import (
-    SearchQueryGenerationService,
-    TaskResultGenerationService,
-    TaskResultEvaluationService
-)
 from ....domain.model import Task
 from ....domain.search_client import SearchClient
+from ....domain.service import (
+    SearchQueryGenerationService,
+    TaskResultEvaluationService,
+    TaskResultGenerationService,
+)
 from ....log import get_logger
 from ..graph.state import BaseState
 
@@ -64,7 +65,7 @@ class WebSearchAgent:
             return Command(update={"queries": queries}, goto="execute_search")
 
         except Exception as e:
-            logger.error(f"検索クエリ生成でエラーが発生しました: {str(e)}", exc_info=True)
+            logger.error(f"検索クエリ生成でエラーが発生しました: {e!s}", exc_info=True)
             raise
 
     async def execute_search(self, state: WebSearchState) -> Command:
@@ -88,7 +89,7 @@ class WebSearchAgent:
             return Command(update={}, goto="generate_task_result")
 
         except Exception as e:
-            logger.error(f"検索実行でエラーが発生しました: {str(e)}", exc_info=True)
+            logger.error(f"検索実行でエラーが発生しました: {e!s}", exc_info=True)
             raise
 
     async def generate_task_result(self, state: WebSearchState) -> Command:
@@ -110,7 +111,7 @@ class WebSearchAgent:
             return Command(update={}, goto="evaluate_task_result")
 
         except Exception as e:
-            logger.error(f"タスク結果生成でエラーが発生しました: {str(e)}", exc_info=True)
+            logger.error(f"タスク結果生成でエラーが発生しました: {e!s}", exc_info=True)
             raise
 
     async def evaluate_task_result(self, state: WebSearchState) -> Command:
@@ -142,7 +143,7 @@ class WebSearchAgent:
                     },
                     goto="generate_search_queries"
                 )
-            elif evaluation.need == "generate":
+            if evaluation.need == "generate":
                 # タスク結果の生成のみ改善（検索結果は再利用、動的エッジ）
                 return Command(
                     update={
@@ -151,11 +152,10 @@ class WebSearchAgent:
                     },
                     goto="generate_task_result"
                 )
-            else:
-                return Command(update={}, goto=END)
+            return Command(update={}, goto=END)
 
         except Exception as e:
-            logger.error(f"タスク結果評価でエラーが発生しました: {str(e)}", exc_info=True)
+            logger.error(f"タスク結果評価でエラーが発生しました: {e!s}", exc_info=True)
             raise
 
     def build_graph(self) -> StateGraph:

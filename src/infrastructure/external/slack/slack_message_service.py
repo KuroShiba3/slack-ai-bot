@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.async_client import AsyncWebClient
@@ -22,9 +22,9 @@ class SlackMessageService:
         self,
         channel: str,
         text: str,
-        thread_ts: Optional[str] = None,
+        thread_ts: str | None = None,
         use_blocks: bool = True,
-        message_id: Optional[str] = None,
+        message_id: str | None = None,
         enable_feedback: bool = True,
     ) -> None:
         """Slackにメッセージを送信する
@@ -110,9 +110,9 @@ class SlackMessageService:
     def _create_message_blocks(
         self,
         text: str,
-        message_id: Optional[str],
+        message_id: str | None,
         enable_feedback: bool,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """メッセージ用のblocksを生成
 
         Args:
@@ -135,7 +135,7 @@ class SlackMessageService:
 
         return blocks
 
-    def _create_feedback_block(self, message_id: str) -> Dict[str, Any]:
+    def _create_feedback_block(self, message_id: str) -> dict[str, Any]:
         """フィードバックボタンのblockを生成
 
         Args:

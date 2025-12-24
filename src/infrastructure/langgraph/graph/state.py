@@ -1,7 +1,6 @@
-from typing import TypedDict, Annotated
-from operator import add
+from typing import Annotated, TypedDict
 
-from ....domain.model import TaskPlan, ChatSession
+from ....domain.model import ChatSession, TaskPlan
 
 
 def take_first(left, right):

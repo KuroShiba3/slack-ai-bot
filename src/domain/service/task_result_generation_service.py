@@ -1,5 +1,5 @@
-from ..model import Task, WebSearchTaskLog, Message, SearchResult
 from ..llm_client import LLMClient
+from ..model import Message, SearchResult, Task, WebSearchTaskLog
 
 
 class TaskResultGenerationService:

@@ -1,4 +1,5 @@
-from typing import Type, TypeVar
+from typing import TypeVar
+
 from pydantic import BaseModel
 
 from ....domain.llm_client import LLMClient
@@ -37,7 +38,7 @@ class LangChainLLMClient(LLMClient):
     async def generate_with_structured_output(
         self,
         messages: list[Message],
-        response_model: Type[T]
+        response_model: type[T]
     ) -> T:
         """メッセージリストから構造化された出力を生成する
 

@@ -1,8 +1,9 @@
 from typing import Literal
+
 from pydantic import BaseModel, Field
 
-from ..model import Task, WebSearchTaskLog, Message, SearchResult, TaskEvaluation
 from ..llm_client import LLMClient
+from ..model import Message, SearchResult, Task, TaskEvaluation, WebSearchTaskLog
 
 
 class TaskResultEvaluationService:

@@ -4,8 +4,8 @@ import uvicorn
 from fastapi import FastAPI
 
 from .config import ENV
-from .infrastructure.external.slack.slack_adapter import SlackAdapter
 from .di_container import DIContainer
+from .infrastructure.external.slack.slack_adapter import SlackAdapter
 
 # Slackアダプターを初期化
 slack_adapter = SlackAdapter()

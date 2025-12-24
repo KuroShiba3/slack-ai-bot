@@ -1,8 +1,9 @@
 from datetime import datetime
+
 from pydantic import BaseModel, Field
 
-from ..model import Task, WebSearchTaskLog, Message
 from ..llm_client import LLMClient
+from ..model import Message, Task, WebSearchTaskLog
 
 
 class SearchQueryGenerationService:

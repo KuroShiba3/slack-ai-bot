@@ -1,5 +1,6 @@
 import asyncio
 import re
+
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_google_community import GoogleSearchAPIWrapper
 
@@ -53,7 +54,7 @@ class GoogleSearchClient:
                         content=content
                     ))
                 except Exception as e:
-                    logger.warning(f"Webページ取得エラー ({url}): {str(e)}")
+                    logger.warning(f"Webページ取得エラー ({url}): {e!s}")
                     # エラー時はスニペットを使用
                     search_results.append(SearchResult(
                         url=url,
@@ -64,7 +65,7 @@ class GoogleSearchClient:
             return search_results
 
         except Exception as e:
-            logger.error(f"検索実行エラー: {str(e)}", exc_info=True)
+            logger.error(f"検索実行エラー: {e!s}", exc_info=True)
             return []
 
     async def _fetch_and_clean_webpage(self, url: str, timeout: float = 8.0) -> str:

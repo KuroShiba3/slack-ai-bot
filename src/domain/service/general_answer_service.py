@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from ..model import ChatSession, Task, Message
 from ..llm_client import LLMClient
+from ..model import ChatSession, Message, Task
 
 
 class GeneralAnswerService:

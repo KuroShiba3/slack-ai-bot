@@ -2,7 +2,7 @@ from langgraph.graph import END
 from langgraph.types import Command, Send
 
 from ....domain.model import AgentName
-from ....domain.service import TaskPlanningService, AnswerGenerationService
+from ....domain.service import AnswerGenerationService, TaskPlanningService
 from ....log import get_logger
 from ..graph.state import BaseState
 
@@ -58,7 +58,7 @@ class SupervisorAgent:
             )
 
         except Exception as e:
-            logger.error(f"タスク計画生成でエラーが発生しました: {str(e)}", exc_info=True)
+            logger.error(f"タスク計画生成でエラーが発生しました: {e!s}", exc_info=True)
             raise
 
     async def generate_final_answer(self, state: BaseState) -> Command:
@@ -83,5 +83,5 @@ class SupervisorAgent:
             return Command(update={"answer": answer_message.content}, goto=END)
 
         except Exception as e:
-            logger.error(f"最終回答生成でエラーが発生しました: {str(e)}", exc_info=True)
+            logger.error(f"最終回答生成でエラーが発生しました: {e!s}", exc_info=True)
             raise

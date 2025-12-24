@@ -1,6 +1,6 @@
 from uuid import UUID, uuid4
 
-from .task import Task, TaskStatus
+from .task import Task
 
 
 class TaskPlan:

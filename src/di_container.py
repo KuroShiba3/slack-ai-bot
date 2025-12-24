@@ -1,14 +1,18 @@
 """依存性注入コンテナ"""
 from slack_sdk.web.async_client import AsyncWebClient
 
-from .application.usecase.answer_to_user_request_usecase import AnswerToUserRequestUseCase
-from .infrastructure.repository.in_memory_chat_session_repository import InMemoryChatSessionRepository
-from .infrastructure.langgraph.graph.workflow_service import LangGraphWorkflowService
+from .application.usecase.answer_to_user_request_usecase import (
+    AnswerToUserRequestUseCase,
+)
+from .config import GOOGLE_API_KEY
 from .infrastructure.external.llm import ModelFactory
 from .infrastructure.external.slack import SlackMessageService
+from .infrastructure.langgraph.graph.workflow_service import LangGraphWorkflowService
+from .infrastructure.repository.in_memory_chat_session_repository import (
+    InMemoryChatSessionRepository,
+)
 from .presentation.controllers.slack_message_controller import SlackMessageController
 from .presentation.mapper.slack_request_mapper import SlackRequestMapper
-from .config import GOOGLE_API_KEY
 
 
 class DIContainer:

@@ -1,4 +1,5 @@
 from typing import TypedDict
+
 from langgraph.graph import END, StateGraph
 from langgraph.types import Command
 
@@ -45,7 +46,7 @@ class GeneralAnswerAgent:
             return Command(update={}, goto=END)
 
         except Exception as e:
-            logger.error(f"一般回答生成でエラーが発生しました: {str(e)}", exc_info=True)
+            logger.error(f"一般回答生成でエラーが発生しました: {e!s}", exc_info=True)
             raise
 
     def build_graph(self) -> StateGraph:

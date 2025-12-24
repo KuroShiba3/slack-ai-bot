@@ -87,11 +87,10 @@ class ChatSession:
                 raise ValueError("USER以外のメッセージは追加できません")
             self._messages.append(content)
             return content
-        else:
-            # strの場合は新しいMessageを作成
-            message = Message.create_user_message(content)
-            self._messages.append(message)
-            return message
+        # strの場合は新しいMessageを作成
+        message = Message.create_user_message(content)
+        self._messages.append(message)
+        return message
 
     def add_assistant_message(self, content: str | Message) -> Message:
         """アシスタントからのメッセージを追加
@@ -108,11 +107,10 @@ class ChatSession:
                 raise ValueError("ASSISTANT以外のメッセージは追加できません")
             self._messages.append(content)
             return content
-        else:
-            # strの場合は新しいMessageを作成
-            message = Message.create_assistant_message(content)
-            self._messages.append(message)
-            return message
+        # strの場合は新しいMessageを作成
+        message = Message.create_assistant_message(content)
+        self._messages.append(message)
+        return message
 
     def add_task_plan(self, task_plan: TaskPlan) -> None:
         """タスク計画を追加"""
