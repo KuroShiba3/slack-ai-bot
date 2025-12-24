@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-from .task_log import TaskLog
-
 
 @dataclass(frozen=True)
 class SearchResult:
@@ -14,7 +12,7 @@ class SearchAttempt:
     query: str
     results: list[SearchResult]
 
-class WebSearchTaskLog(TaskLog):
+class WebSearchTaskLog:
     def __init__(self, attempts: list[SearchAttempt]):
         self._attempts = attempts
 
