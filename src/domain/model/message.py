@@ -10,10 +10,8 @@ class Role(Enum):
 
 class Message:
     def __init__(self, id: UUID, role: Role, content: str, created_at: datetime):
-        if not content:
+        if not content.strip():
             raise ValueError("メッセージの内容が空です。")
-        if not role:
-            raise ValueError("ロールが空です。")
 
         self._id = id
         self._role = role
@@ -56,5 +54,5 @@ class Message:
         return self._content
 
     @property
-    def created_at(self) -> str:
+    def created_at(self) -> datetime:
         return self._created_at
