@@ -1,9 +1,7 @@
-from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Protocol
 
 
-class TaskLog(ABC):
-    @abstractmethod
+class TaskLog(Protocol):
     def add_attempt(self, **kwargs: Any) -> None:
         """試行をログに追加"""
-        pass
+        ...
