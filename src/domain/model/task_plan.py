@@ -40,9 +40,17 @@ class TaskPlan:
     def format_task_results(self) -> str:
         """タスク結果のフォーマット"""
         task_results_parts = []
-        for task in self._tasks:
+        for i, task in enumerate(self._tasks, 1):
             if task.result:
                 task_results_parts.append(
-                    f"## タスク: {task.description}\n\n{task.result}"
+                    f"## タスク {i}: {task.description}\n\n"
+                    f"### エージェント\n{task.agent_name.value}\n\n"
+                    f"### ステータス\n{task.status.value}\n\n"
+                    f"### 結果\n{task.result}"
                 )
-        return "\n\n---\n\n".join(task_results_parts)
+
+        if not task_results_parts:
+            return "## 実行結果\n\n完了したタスクがありません。"
+
+        formatted_results = "\n\n---\n\n".join(task_results_parts)
+        return f"# タスク実行結果サマリー\n\n実行済みタスク数: {len(task_results_parts)}/{len(self._tasks)}\n\n---\n\n{formatted_results}"
