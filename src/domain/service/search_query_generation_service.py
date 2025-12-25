@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from ..llm_client import LLMClient
+from ...domain.service.port import LLMClient
 from ..model import Message, Task, WebSearchTaskLog
 
 
@@ -36,42 +36,29 @@ class SearchQueryGenerationService:
         self.llm_client = llm_client
 
     async def execute(self, task: Task, feedback: str | None = None) -> list[str]:
-        """タスクから検索クエリを生成する
+        """タスクから検索クエリを生成する"""
 
-        Args:
-            task: 検索対象のタスク
-            feedback: 改善のためのフィードバック(オプション)
-
-        Returns:
-            生成された検索クエリのリスト(最大3個)
-        """
-
-        # Pydanticモデルを定義
         class _SearchQueries(BaseModel):
             queries: list[str] = Field(
                 description="生成された検索クエリのリスト(最大3個)", max_length=3
             )
             reason: str = Field(description="これらのクエリを選んだ理由")
 
-        # タスクログから以前の検索クエリを取得
         previous_queries = []
         if isinstance(task.task_log, WebSearchTaskLog):
             previous_queries = task.task_log.get_all_queries()
 
-        # ヒューマンプロンプトを構築
         human_prompt = self._build_human_prompt(
             task_description=task.description,
             previous_queries=previous_queries,
             feedback=feedback,
         )
 
-        # メッセージリストを構築
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
             Message.create_user_message(human_prompt),
         ]
 
-        # LLMで検索クエリを生成
         search_queries_result = await self.llm_client.generate_with_structured_output(
             messages, _SearchQueries
         )
@@ -79,16 +66,13 @@ class SearchQueryGenerationService:
         return search_queries_result.queries
 
     def _get_current_date(self) -> str:
-        """現在の日付を取得する"""
         return datetime.now().strftime("%Y年%m月%d日")
 
     def _build_human_prompt(
         self, task_description: str, previous_queries: list[str], feedback: str | None
     ) -> str:
-        """ヒューマンプロンプトを構築する"""
         current_date = self._get_current_date()
 
-        # 過去のクエリセクション
         previous_queries_section = ""
         if previous_queries:
             queries_text = "\n".join([f"- {q}" for q in previous_queries])
@@ -98,7 +82,6 @@ class SearchQueryGenerationService:
 
 **重要**: 前回の検索で十分な結果が得られなかったため、異なる角度からの新しいクエリを生成してください。"""
 
-        # フィードバックセクション
         feedback_section = ""
         if feedback:
             feedback_section = f"""
