@@ -1,8 +1,8 @@
 from uuid import UUID
 
-from ..dto.feedback_usecase.feedback_input import FeedbackInput
+from ..dto.feedback_usecase import FeedbackInput
 from ...domain.model.feedback import Feedback, FeedbackType
-from ...domain.repository.feedback_repository import FeedbackRepository
+from ...domain.repository import FeedbackRepository
 from ...log import get_logger
 
 logger = get_logger(__name__)

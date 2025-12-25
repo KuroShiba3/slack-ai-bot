@@ -6,8 +6,8 @@ from fastapi import FastAPI
 
 from .config import ENV
 from .di_container import DIContainer
-from .infrastructure.database.connection_pool import DatabasePool
-from .infrastructure.database.migration import run_migrations
+from .infrastructure.database import DatabasePool
+from .infrastructure.database import run_migrations
 from .infrastructure.external.slack.slack_adapter import SlackAdapter
 from .log import get_logger
 

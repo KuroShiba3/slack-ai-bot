@@ -7,7 +7,7 @@ from ...application.usecase.answer_to_user_request_usecase import (
 )
 from ...infrastructure.external.slack.slack_message_service import SlackMessageService
 from ...log.logger import get_logger
-from ..mapper.slack_request_mapper import SlackRequestMapper
+from ..mapper import SlackRequestMapper
 
 logger = get_logger(__name__)
 

@@ -1,6 +1,6 @@
 from ...domain.model import ChatSession
 from ...domain.repository import ChatSessionRepository
-from ...domain.service.interfaces.workflow_service import WorkflowService
+from ...domain.service.interfaces import WorkflowService
 from ..dto.answer_to_user_request_usecase import (
     AnswerToUserRequestInput,
     AnswerToUserRequestOutput,

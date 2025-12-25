@@ -1,5 +1,5 @@
 from ...domain.model.feedback import Feedback
-from ..database.connection_pool import DatabasePool
+from ..database import DatabasePool
 
 
 class FeedbackRepository:

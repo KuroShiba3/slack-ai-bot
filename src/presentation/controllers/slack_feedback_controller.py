@@ -1,10 +1,8 @@
 import json
 from typing import Any
 
-from ...application.dto.feedback_usecase.feedback_input import (
-    FeedbackInput,
-)
-from ...application.usecase.feedback_usecase import FeedbackUseCase
+from ...application.dto.feedback_usecase import FeedbackInput
+from ...application.usecase import FeedbackUseCase
 from ...log import get_logger
 
 logger = get_logger(__name__)

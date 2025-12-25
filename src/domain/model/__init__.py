@@ -8,3 +8,21 @@ from .task_log import TaskLog
 from .task_plan import TaskPlan
 from .web_search_task_log import SearchResult, WebSearchTaskLog
 from .workflow_result import WorkflowResult
+
+
+__all__ = [
+    "ChatSession",
+    "Feedback",
+    "GeneralAnswerTaskLog",
+    "Message",
+    "Role",
+    "AgentName",
+    "Task",
+    "TaskStatus",
+    "TaskEvaluation",
+    "TaskLog",
+    "TaskPlan",
+    "SearchResult",
+    "WebSearchTaskLog",
+    "WorkflowResult",
+]

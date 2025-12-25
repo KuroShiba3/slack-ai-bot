@@ -4,7 +4,7 @@ from langgraph.graph import END, StateGraph
 from langgraph.types import Command
 
 from ....domain.model import Task
-from ...external.web_search.search_client import SearchClient
+from ...external.web_search import SearchClient
 from ....domain.service import (
     SearchQueryGenerationService,
     TaskResultEvaluationService,

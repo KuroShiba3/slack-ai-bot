@@ -7,7 +7,7 @@ from ...domain.model.message import Message, Role
 from ...domain.model.task import AgentName, Task, TaskStatus
 from ...domain.model.task_plan import TaskPlan
 from ...domain.model.web_search_task_log import WebSearchTaskLog
-from ..database.connection_pool import DatabasePool
+from ..database import DatabasePool
 
 
 class ChatSessionRepository:

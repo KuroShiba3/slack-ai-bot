@@ -1,2 +1,7 @@
 from .answer_to_user_request_input import AnswerToUserRequestInput
 from .answer_to_user_request_output import AnswerToUserRequestOutput
+
+__all__ = [
+    "AnswerToUserRequestInput",
+    "AnswerToUserRequestOutput",
+]
