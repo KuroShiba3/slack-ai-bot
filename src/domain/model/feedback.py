@@ -1,5 +1,11 @@
 from datetime import datetime
+from enum import Enum
 from uuid import UUID, uuid4
+
+
+class FeedbackType(Enum):
+    GOOD = "good"
+    BAD = "bad"
 
 
 class Feedback:
@@ -8,7 +14,7 @@ class Feedback:
         id: UUID,
         user_id: str,
         message_id: UUID,
-        feedback: bool,
+        feedback: FeedbackType,
         created_at: datetime,
         updated_at: datetime,
     ):
@@ -20,7 +26,7 @@ class Feedback:
         self._updated_at = updated_at
 
     @classmethod
-    def create(cls, user_id: str, message_id: UUID, feedback: bool) -> "Feedback":
+    def create(cls, user_id: str, message_id: UUID, feedback: FeedbackType) -> "Feedback":
         created_at = datetime.now()
         updated_at = created_at
         return cls(
@@ -38,7 +44,7 @@ class Feedback:
         id: UUID,
         user_id: str,
         message_id: UUID,
-        feedback: bool,
+        feedback: FeedbackType,
         created_at: datetime,
         updated_at: datetime,
     ) -> "Feedback":
@@ -64,7 +70,7 @@ class Feedback:
         return self._message_id
 
     @property
-    def feedback(self) -> bool:
+    def feedback(self) -> FeedbackType:
         return self._feedback
 
     @property
@@ -76,21 +82,21 @@ class Feedback:
         return self._updated_at
 
     def is_positive(self) -> bool:
-        return self._feedback
+        return self._feedback == FeedbackType.GOOD
 
-    def is_naegative(self) -> bool:
-        return not self._feedback
+    def is_negative(self) -> bool:
+        return self._feedback == FeedbackType.BAD
 
     def make_positive(self) -> None:
         """フィードバックをポジティブに変更"""
         if self.is_positive():
             return
-        self._feedback = True
+        self._feedback = FeedbackType.GOOD
         self._updated_at = datetime.now()
 
     def make_negative(self) -> None:
         """フィードバックをネガティブに変更"""
-        if not self.is_naegative():
+        if self.is_negative():
             return
-        self._feedback = False
+        self._feedback = FeedbackType.BAD
         self._updated_at = datetime.now()
