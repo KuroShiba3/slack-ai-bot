@@ -10,8 +10,6 @@ logger = get_logger(__name__)
 
 
 class SlackMessageService:
-    """Slackメッセージ送信とリアクション管理を行うサービス"""
-
     MAX_TEXT_LENGTH = 2900
     MAX_FALLBACK_LENGTH = 100
 
@@ -27,16 +25,7 @@ class SlackMessageService:
         message_id: str | None = None,
         enable_feedback: bool = True,
     ) -> None:
-        """Slackにメッセージを送信する
-
-        Args:
-            channel: 送信先チャンネルID
-            text: 送信するテキスト
-            thread_ts: スレッドのタイムスタンプ
-            use_blocks: Block Kitを使用するか
-            message_id: メッセージID (フィードバック用)
-            enable_feedback: フィードバックボタンを表示するか
-        """
+        """Slackにメッセージを送信する"""
         # テキストの切り詰め処理
         text, truncated = self._truncate_text_if_needed(text)
 
@@ -60,20 +49,12 @@ class SlackMessageService:
         )
 
     def _truncate_text_if_needed(self, text: str) -> tuple[str, bool]:
-        """必要に応じてテキストを切り詰める
-
-        Args:
-            text: 元のテキスト
-
-        Returns:
-            切り詰められたテキストと切り詰めが発生したかのフラグ
-        """
+        """必要に応じてテキストを切り詰める"""
         if len(text) <= self.MAX_TEXT_LENGTH:
             return text, False
 
         original_length = len(text)
 
-        # 適切な切断点を探す
         truncate_point = self._find_truncation_point(text)
 
         truncated_text = text[:truncate_point]
@@ -85,14 +66,7 @@ class SlackMessageService:
         return truncated_text, True
 
     def _find_truncation_point(self, text: str) -> int:
-        """テキストの適切な切断点を見つける
-
-        Args:
-            text: 対象テキスト
-
-        Returns:
-            切断位置のインデックス
-        """
+        """テキストの適切な切断点を見つける"""
         # 段落の区切りを探す
         last_paragraph = text.rfind("\n\n", 0, self.MAX_TEXT_LENGTH)
         if last_paragraph > self.MAX_TEXT_LENGTH - 500:
@@ -106,7 +80,6 @@ class SlackMessageService:
         if last_sentence > self.MAX_TEXT_LENGTH - 200:
             return last_sentence + 1
 
-        # 見つからない場合は最大長で切る
         return self.MAX_TEXT_LENGTH
 
     def _create_message_blocks(
@@ -115,16 +88,7 @@ class SlackMessageService:
         message_id: str | None,
         enable_feedback: bool,
     ) -> list[dict[str, Any]]:
-        """メッセージ用のblocksを生成
-
-        Args:
-            text: メッセージテキスト
-            message_id: メッセージID
-            enable_feedback: フィードバックボタンを含めるか
-
-        Returns:
-            Slack blocks形式のリスト
-        """
+        """メッセージ用のblocksを生成"""
         blocks = [
             {
                 "type": "section",
@@ -138,14 +102,7 @@ class SlackMessageService:
         return blocks
 
     def _create_feedback_block(self, message_id: str) -> dict[str, Any]:
-        """フィードバックボタンのblockを生成
-
-        Args:
-            message_id: メッセージID
-
-        Returns:
-            フィードバックblock
-        """
+        """フィードバックボタンのblockを生成"""
         return {
             "type": "context_actions",
             "elements": [
@@ -170,13 +127,7 @@ class SlackMessageService:
         timestamp: str,
         emoji: str,
     ) -> None:
-        """Slackメッセージにリアクションを追加する
-
-        Args:
-            channel: チャンネルID
-            timestamp: メッセージのタイムスタンプ
-            emoji: 絵文字名 (コロンなし)
-        """
+        """Slackメッセージにリアクションを追加する"""
         try:
             await self._client.reactions_add(
                 channel=channel,
@@ -195,13 +146,7 @@ class SlackMessageService:
         timestamp: str,
         emoji: str,
     ) -> None:
-        """Slackメッセージからリアクションを削除する
-
-        Args:
-            channel: チャンネルID
-            timestamp: メッセージのタイムスタンプ
-            emoji: 絵文字名 (コロンなし)
-        """
+        """Slackメッセージからリアクションを削除する """
         try:
             await self._client.reactions_remove(
                 channel=channel,
@@ -220,16 +165,7 @@ class SlackMessageService:
         timestamp: str,
         reaction_name: str,
     ) -> bool:
-        """特定のリアクションがボットによって押されているかチェック
-
-        Args:
-            channel: チャンネルID
-            timestamp: メッセージのタイムスタンプ
-            reaction_name: リアクション名
-
-        Returns:
-            リアクションが存在する場合True
-        """
+        """特定のリアクションがボットによって押されているかチェック"""
         try:
             response = await self._client.reactions_get(
                 channel=channel,
