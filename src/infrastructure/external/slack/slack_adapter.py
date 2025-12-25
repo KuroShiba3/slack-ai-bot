@@ -34,7 +34,10 @@ class SlackAdapter:
             return {"status": "ok", "environment": os.getenv("ENV", "unknown")}
 
     def register_handler(self, event_type: str, handler: Callable):
-        self.app.event(event_type)(handler)
+        if event_type == "action":
+            self.app.action("feedback")(handler)
+        else:
+            self.app.event(event_type)(handler)
 
     def _create_slack_app(self) -> AsyncApp:
         if not SLACK_BOT_TOKEN or not SLACK_SIGNING_SECRET:
