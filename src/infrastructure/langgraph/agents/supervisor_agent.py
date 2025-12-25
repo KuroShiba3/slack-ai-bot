@@ -68,8 +68,6 @@ class SupervisorAgent:
                 chat_session, task_plan
             )
 
-            chat_session.add_assistant_message(answer_message)
-
             return Command(update={"answer": answer_message.content}, goto=END)
 
         except Exception as e:
