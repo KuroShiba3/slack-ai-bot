@@ -138,9 +138,6 @@ class Task:
 
     def update_result(self, result: str) -> None:
         """タスクの結果を更新"""
-        if self._status == TaskStatus.PENDING:
-            raise ValueError("未実行のタスクの結果は更新できません")
-
         if not result or not result.strip():
             self.fail("タスク実行結果が空でした")
             return
