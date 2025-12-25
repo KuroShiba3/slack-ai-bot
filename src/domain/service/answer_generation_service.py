@@ -1,8 +1,9 @@
-from ..llm_client import LLMClient
+from ...domain.service.port import LLMClient
 from ..model import ChatSession, Message, TaskPlan
 
 
 class AnswerGenerationService:
+    """タスク実行結果から最終回答を生成するサービス"""
     SYSTEM_PROMPT = """複数のタスクの実行結果を統合し、ユーザーの質問に対する包括的で分かりやすい回答を生成してください。
 
 # 回答のルール:
@@ -36,43 +37,28 @@ class AnswerGenerationService:
         self.llm_client = llm_client
 
     async def execute(self, chat_session: ChatSession, task_plan: TaskPlan) -> Message:
-        """タスク実行結果から最終回答を生成する
-
-        Args:
-            chat_session: チャットセッション(会話履歴を含む)
-            task_plan: 実行済みのタスク計画(タスク結果を含む)
-
-        Returns:
-            アシスタントメッセージとしての最終回答
-        """
-        # 最新のユーザーメッセージを取得
+        """タスク実行結果から最終回答を生成する"""
         latest_message = chat_session.last_user_message()
         if not latest_message:
             raise ValueError("最終回答を生成するにはユーザーメッセージが必要です")
 
-        # タスク結果をフォーマット
         task_results_text = task_plan.format_task_results()
 
-        # プロンプトを構築
         human_prompt = self._build_human_prompt(
             user_question=latest_message.content, task_results=task_results_text
         )
 
-        # メッセージリストを構築
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
-            *chat_session.messages[:-1],  # 最後のユーザーメッセージを除く会話履歴
-            Message.create_user_message(human_prompt),  # タスク結果を含むプロンプト
+            *chat_session.messages[:-1],
+            Message.create_user_message(human_prompt),
         ]
 
-        # LLMで最終回答を生成
         answer_content = await self.llm_client.generate(messages)
 
-        # Messageオブジェクトとして返す
         return Message.create_assistant_message(answer_content)
 
     def _build_human_prompt(self, user_question: str, task_results: str) -> str:
-        """ヒューマンプロンプトを構築する"""
         return f"""## ユーザーの質問:
 {user_question}
 
