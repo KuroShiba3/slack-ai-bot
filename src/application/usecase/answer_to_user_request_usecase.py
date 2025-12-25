@@ -1,6 +1,6 @@
 from ...domain.model import ChatSession
-from ...domain.repository import IChatSessionRepository
-from ...domain.service.interfaces.workflow_service import IWorkflowService
+from ...domain.repository import ChatSessionRepository
+from ...domain.service.interfaces.workflow_service import WorkflowService
 from ..dto.answer_to_user_request_usecase import (
     AnswerToUserRequestInput,
     AnswerToUserRequestOutput,
@@ -10,8 +10,8 @@ from ..dto.answer_to_user_request_usecase import (
 class AnswerToUserRequestUseCase:
     def __init__(
         self,
-        workflow_service: IWorkflowService,
-        chat_session_repository: IChatSessionRepository,
+        workflow_service: WorkflowService,
+        chat_session_repository: ChatSessionRepository,
     ):
         self._workflow_service = workflow_service
         self._chat_session_repository = chat_session_repository
@@ -26,7 +26,12 @@ class AnswerToUserRequestUseCase:
         # チャットセッションを取得または作成
         chat_session = await self._chat_session_repository.find_by_id(conversation_id)
         if not chat_session:
-            chat_session = ChatSession.create(id=conversation_id)
+            chat_session = ChatSession.create(
+                id=conversation_id,
+                thread_id=input_dto.context.get("thread_ts"),
+                user_id=input_dto.context.get("user_id", ""),
+                channel_id=input_dto.context.get("channel_id", ""),
+            )
 
         # ユーザーメッセージを追加
         chat_session.add_user_message(input_dto.user_message)
@@ -38,10 +43,9 @@ class AnswerToUserRequestUseCase:
         chat_session.add_assistant_message(result.answer)
         chat_session.add_task_plan(result.task_plan)
 
-        # 保存
         await self._chat_session_repository.save(chat_session)
 
-        # 回答を返す
         return AnswerToUserRequestOutput(
-            answer=result.answer, message_id=chat_session.last_assistant_message_id() or ""
+            answer=result.answer,
+            message_id=chat_session.last_assistant_message_id() or "",
         )
