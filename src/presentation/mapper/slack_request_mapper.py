@@ -8,8 +8,6 @@ from ..dto.slack_request_dto import SlackRequestDTO
 
 
 class SlackRequestMapper:
-    """Slackリクエストの変換を担当するマッパー"""
-
     @staticmethod
     def from_event(event: dict[str, Any]) -> SlackRequestDTO:
         """SlackイベントからDTOを生成"""
