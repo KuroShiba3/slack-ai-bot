@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ..llm_client import LLMClient
+from ...domain.service.port import LLMClient
 from ..model import ChatSession, Message, Task
 
 
@@ -31,37 +31,23 @@ class GeneralAnswerService:
         self.llm_client = llm_client
 
     async def execute(self, chat_session: ChatSession, task: Task):
-        """タスクを実行して回答を生成し、タスクを完了させる
-
-        Args:
-            chat_session: チャットセッション(会話履歴を含む)
-            task: 実行するタスク
-
-        Returns:
-            完了済みのタスク
-        """
-        # タスク用のプロンプトを構築(日付情報を含む)
+        """タスクを実行して回答を生成し、タスクを完了させる"""
         task_prompt = self._build_task_prompt(task.description)
 
-        # メッセージリストを構築
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
             *chat_session.messages,
             Message.create_user_message(task_prompt),
         ]
 
-        # LLMで回答生成
         answer = await self.llm_client.generate(messages)
 
-        # タスクを完了させる
         task.complete(answer)
 
     def _get_current_date(self) -> str:
-        """現在の日付を取得する"""
         return datetime.now().strftime("%Y年%m月%d日")
 
     def _build_task_prompt(self, task_description: str) -> str:
-        """タスクプロンプトを構築する"""
         current_date = self._get_current_date()
 
         return f"""## 現在の日付:
