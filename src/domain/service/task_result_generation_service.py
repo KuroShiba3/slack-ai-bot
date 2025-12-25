@@ -1,5 +1,5 @@
-from ..llm_client import LLMClient
-from ..model import Message, SearchResult, Task, WebSearchTaskLog
+from ...domain.service.port import LLMClient
+from ..model import Message, SearchResult, Task, TaskStatus, WebSearchTaskLog
 
 
 class TaskResultGenerationService:
@@ -47,20 +47,9 @@ class TaskResultGenerationService:
         feedback: str | None = None,
         previous_result: str | None = None,
     ):
-        """検索結果からタスク結果を生成し、タスクを完了させる
-
-        Args:
-            task: 対象のタスク(検索結果を含む)
-            feedback: 改善のためのフィードバック(オプション)
-            previous_result: 以前のタスク結果(オプション)
-
-        Returns:
-            完了済みのタスク
-        """
-        # タスクログから検索結果を取得
+        """検索結果からタスク結果を生成し、タスクを完了させる"""
         search_results = self._get_search_results_from_task(task)
 
-        # ヒューマンプロンプトを構築
         human_prompt = self._build_human_prompt(
             task_description=task.description,
             search_results=search_results,
@@ -68,17 +57,17 @@ class TaskResultGenerationService:
             previous_result=previous_result,
         )
 
-        # メッセージリストを構築
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
             Message.create_user_message(human_prompt),
         ]
 
-        # LLMでタスク結果を生成
         task_result = await self.llm_client.generate(messages)
 
-        # タスクを完了させる
-        task.complete(task_result)
+        if task.status == TaskStatus.COMPLETED:
+            task.update_result(task_result)
+        else:
+            task.complete(task_result)
 
     def _get_search_results_from_task(self, task: Task) -> list[SearchResult]:
         """タスクログから検索結果を取得する"""
@@ -92,7 +81,6 @@ class TaskResultGenerationService:
         return search_results
 
     def _get_current_date(self) -> str:
-        """現在の日付を取得する"""
         from datetime import datetime
 
         return datetime.now().strftime("%Y年%m月%d日")
@@ -107,7 +95,6 @@ class TaskResultGenerationService:
         """ヒューマンプロンプトを構築する"""
         current_date = self._get_current_date()
 
-        # 検索結果セクション
         search_results_section = ""
         if search_results:
             results_parts = ["\n## 取得した検索結果:"]
@@ -121,7 +108,6 @@ class TaskResultGenerationService:
             )
             search_results_section = "".join(results_parts)
 
-        # フィードバックセクション
         feedback_section = ""
         if feedback:
             feedback_parts = [f"\n## 改善フィードバック:\n{feedback}"]
