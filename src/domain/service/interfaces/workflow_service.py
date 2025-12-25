@@ -3,7 +3,7 @@ from typing import Any, Protocol
 from ...model import ChatSession, WorkflowResult
 
 
-class IWorkflowService(Protocol):
+class WorkflowService(Protocol):
     async def execute(
         self, chat_session: ChatSession, context: dict[str, Any]
     ) -> WorkflowResult:
