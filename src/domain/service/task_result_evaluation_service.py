@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from ..llm_client import LLMClient
+from ...domain.service.port import LLMClient
 from ..model import Message, SearchResult, Task, TaskEvaluation, WebSearchTaskLog
 
 
@@ -36,18 +36,10 @@ class TaskResultEvaluationService:
         self.llm_client = llm_client
 
     async def execute(self, task: Task) -> TaskEvaluation:
-        """タスク結果を評価する
-
-        Args:
-            task: 評価対象のタスク(結果と検索結果を含む)
-
-        Returns:
-            評価結果
-        """
+        """タスク結果を評価する"""
         if not task.result:
             raise ValueError("タスク結果が存在しません")
 
-        # LLM出力用のスキーマ(サービス内部の実装詳細)
         class _TaskEvaluationSchema(BaseModel):
             is_satisfactory: bool = Field(description="タスク結果が十分か")
             need: Literal["search", "generate"] | None = Field(
@@ -56,28 +48,23 @@ class TaskResultEvaluationService:
             reason: str = Field(description="判断理由")
             feedback: str | None = Field(description="改善のためのフィードバック")
 
-        # タスクログから検索結果を取得
         search_results = self._get_search_results_from_task(task)
 
-        # ヒューマンプロンプトを構築
         human_prompt = self._build_human_prompt(
             task_description=task.description,
             task_result=task.result,
             search_results=search_results,
         )
 
-        # メッセージリストを構築
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
             Message.create_user_message(human_prompt),
         ]
 
-        # LLMで評価を生成
         llm_output = await self.llm_client.generate_with_structured_output(
             messages, _TaskEvaluationSchema
         )
 
-        # ドメイン値オブジェクトに変換して返す
         return TaskEvaluation(
             is_satisfactory=llm_output.is_satisfactory,
             need=llm_output.need,
@@ -97,7 +84,6 @@ class TaskResultEvaluationService:
         return search_results
 
     def _get_current_date(self) -> str:
-        """現在の日付を取得する"""
         from datetime import datetime
 
         return datetime.now().strftime("%Y年%m月%d日")
@@ -111,7 +97,6 @@ class TaskResultEvaluationService:
         """ヒューマンプロンプトを構築する"""
         current_date = self._get_current_date()
 
-        # 検索結果セクション
         search_results_section = ""
         if search_results:
             results_parts = ["\n## 取得した検索結果:"]
