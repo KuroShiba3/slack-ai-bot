@@ -136,6 +136,20 @@ class Task:
         self._result = result
         self._completed_at = datetime.now()
 
+    def update_result(self, result: str) -> None:
+        """タスクの結果を更新"""
+        if self._status == TaskStatus.PENDING:
+            raise ValueError("未実行のタスクの結果は更新できません")
+
+        if not result or not result.strip():
+            self.fail("タスク実行結果が空でした")
+            return
+
+        self._result = result
+        if self._status == TaskStatus.IN_PROGRESS:
+            self._status = TaskStatus.COMPLETED
+            self._completed_at = datetime.now()
+
     def fail(self, error_message: str) -> None:
         """タスクを失敗として記録"""
         self._status = TaskStatus.FAILED
