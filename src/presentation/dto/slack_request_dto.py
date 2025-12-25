@@ -3,8 +3,6 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class SlackRequestDTO:
-    """Slack固有のリクエストDTO(純粋なデータ構造)"""
-
     text: str
     user_id: str
     channel_id: str
