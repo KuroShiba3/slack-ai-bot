@@ -38,3 +38,40 @@ class WebSearchTaskLog:
     def get_all_queries(self) -> list[str]:
         """すべての検索クエリを取得"""
         return [attempt.query for attempt in self._attempts]
+
+    def to_dict(self) -> dict[str, Any]:
+        """辞書形式に変換"""
+        return {
+            "attempts": [
+                {
+                    "query": attempt.query,
+                    "results": [
+                        {
+                            "url": result.url,
+                            "title": result.title,
+                            "content": result.content,
+                        }
+                        for result in attempt.results
+                    ],
+                }
+                for attempt in self._attempts
+            ]
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "WebSearchTaskLog":
+        """辞書形式から復元"""
+        task_log = cls.create()
+        for attempt_data in data.get("attempts", []):
+            results = [
+                SearchResult(
+                    url=r["url"],
+                    title=r["title"],
+                    content=r["content"],
+                )
+                for r in attempt_data.get("results", [])
+            ]
+            task_log._attempts.append(
+                SearchAttempt(query=attempt_data["query"], results=results)
+            )
+        return task_log
