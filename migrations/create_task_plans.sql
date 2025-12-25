@@ -1,9 +1,9 @@
--- depends: create_chat_sessions
+-- depends: create_messages
 
 CREATE TABLE IF NOT EXISTS task_plans (
     id UUID PRIMARY KEY,
     chat_session_id VARCHAR(255) NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
-    message_id UUID NOT NULL,
+    message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
