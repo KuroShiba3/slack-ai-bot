@@ -25,3 +25,19 @@ class GeneralAnswerTaskLog:
         response = kwargs.get("response")
         if response is not None:
             self._attempts.append(GenerationAttempt(response=response))
+
+    def to_dict(self) -> dict[str, Any]:
+        """辞書形式に変換"""
+        return {
+            "attempts": [{"response": attempt.response} for attempt in self._attempts]
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "GeneralAnswerTaskLog":
+        """辞書形式から復元"""
+        task_log = cls.create()
+        for attempt_data in data.get("attempts", []):
+            task_log._attempts.append(
+                GenerationAttempt(response=attempt_data["response"])
+            )
+        return task_log
