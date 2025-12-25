@@ -1,1 +1,1 @@
-from .chat_session_repository import IChatSessionRepository
+from .chat_session_repository import ChatSessionRepository

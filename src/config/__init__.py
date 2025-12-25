@@ -16,5 +16,5 @@ GOOGLE_CSE_ID = os.environ.get("GOOGLE_CSE_ID")
 # Database関連
 POSTGRES_URL = os.environ.get("POSTGRES_URL")
 
-# 環境
+# 環境設定
 ENV = os.environ.get("ENV")
