@@ -10,8 +10,6 @@ logger = get_logger(__name__)
 
 
 class SupervisorAgent:
-    """Supervisorエージェント: タスク計画と最終回答生成を担当"""
-
     def __init__(
         self,
         task_planning_service: TaskPlanningService,
@@ -27,15 +25,10 @@ class SupervisorAgent:
             if not chat_session:
                 raise ValueError("chat_sessionがステートに存在しません")
 
-            # タスク計画を生成
             task_plan = await self.task_planning_service.execute(chat_session)
 
-            # ChatSessionにタスク計画を追加
             chat_session.add_task_plan(task_plan)
 
-            logger.info(f"タスク計画生成完了: tasks_count={len(task_plan.tasks)}")
-
-            # 各タスクを並列実行するためのSendを作成
             sends = []
             for task in task_plan.tasks:
                 send_data = {
@@ -71,15 +64,11 @@ class SupervisorAgent:
             if not task_plan:
                 raise ValueError("TaskPlanが見つかりません")
 
-            # 最終回答を生成
             answer_message = await self.answer_generation_service.execute(
                 chat_session, task_plan
             )
 
-            # ChatSessionに回答を追加(Messageオブジェクトを直接渡す)
             chat_session.add_assistant_message(answer_message)
-
-            logger.info("最終回答生成完了")
 
             return Command(update={"answer": answer_message.content}, goto=END)
 
