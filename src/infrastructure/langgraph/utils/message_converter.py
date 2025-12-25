@@ -4,18 +4,9 @@ from ....domain.model import Message, Role
 
 
 class MessageConverter:
-    """ドメインモデルのMessageとLangChainのメッセージを相互変換するクラス"""
-
     @staticmethod
     def to_langchain_messages(messages: list[Message]) -> list[BaseMessage]:
-        """ドメインモデルのMessageをLangChainのメッセージに変換
-
-        Args:
-            messages: ドメインモデルのMessageリスト
-
-        Returns:
-            LangChainのBaseMessageリスト
-        """
+        """ドメインモデルのMessageをLangChainのメッセージに変換"""
         langchain_messages: list[BaseMessage] = []
 
         for msg in messages:
@@ -32,14 +23,7 @@ class MessageConverter:
 
     @staticmethod
     def to_domain_message(message: BaseMessage) -> Message:
-        """LangChainのメッセージをドメインモデルのMessageに変換
-
-        Args:
-            message: LangChainのBaseMessage
-
-        Returns:
-            ドメインモデルのMessage
-        """
+        """LangChainのメッセージをドメインモデルのMessageに変換"""
         if isinstance(message, HumanMessage):
             return Message.create_user_message(message.content)  # type: ignore
         if isinstance(message, AIMessage):
