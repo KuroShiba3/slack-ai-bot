@@ -4,11 +4,11 @@ services:
       context: .
       dockerfile: Dockerfile
       target: local
+    env_file:
+      - .env
     volumes:
       - ./src:/app/src
-      - .env:/app/.env
-    environment:
-      - PYTHONUNBUFFERED=1
+      - ./migrations:/app/migrations
     depends_on:
       - postgres
 
