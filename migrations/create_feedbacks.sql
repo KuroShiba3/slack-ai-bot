@@ -1,6 +1,8 @@
+-- depends: create_messages
+
 CREATE TABLE IF NOT EXISTS feedbacks (
     id UUID PRIMARY KEY,
-    message_id UUID NOT NULL,
+    message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
     user_id VARCHAR(255) NOT NULL,
     feedback VARCHAR(10) NOT NULL CHECK (feedback IN ('good', 'bad')),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
