@@ -1,0 +1,44 @@
+output "slack_bot_token" {
+    description = "Slack Bot TokennSecret ID"
+    value       = google_secret_manager_secret.slack_bot_token.secret_id
+}
+
+output "slack_signing_secret" {
+    description = "Slack Signing SecretnSecret ID"
+    value       = google_secret_manager_secret.slack_signing_secret.secret_id
+}
+
+output "google_api_key" {
+    description = "Google API KeynSecret ID"
+    value       = google_secret_manager_secret.google_api_key.secret_id
+}
+
+output "google_cx_id" {
+    description = "Tavily API KeynSecret ID"
+    value       = google_secret_manager_secret.google_cx_id.secret_id
+}
+
+output "postgres_user" {
+    description = "PostgreSQL UsernSecret ID"
+    value       = google_secret_manager_secret.postgres_user.secret_id
+}
+
+output "postgres_password" {
+    description = "PostgreSQL PasswordnSecret ID"
+    value       = google_secret_manager_secret.postgres_password.secret_id
+}
+
+output "gdrive_sa_key" {
+    description = "Google Drive Service Account Key Secret ID"
+    value       = google_secret_manager_secret.gdrive_sa_key.secret_id
+}
+
+output "gcs_sa_key" {
+    description = "GCS Service Account Key Secret ID"
+    value       = google_secret_manager_secret.gcs_sa_key.secret_id
+}
+
+output "dwd_service_account_key" {
+    description = "Domain-Wide Delegation Service Account Key Secret ID"
+    value       = google_secret_manager_secret.dwd_service_account_key.secret_id
+}
