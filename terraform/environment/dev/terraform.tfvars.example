@@ -1,0 +1,5 @@
+project_id            = "your-project-id"
+region               = "asia-northeast1"
+environment          = "dev"
+service_name         = "slackaibot"
+service_account_email = "your-service-account@developer.gserviceaccount.com"
