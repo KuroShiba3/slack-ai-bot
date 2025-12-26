@@ -34,12 +34,13 @@ module "cloudrun" {
     memory = "2Gi"
     cpu = 1
     min_instance_count = 0
+    max_instance_count = 1
+    deletion_protection = false
+    postgres_url = module.secret_manager.postgres_url
     slack_bot_token = module.secret_manager.slack_bot_token
     slack_signing_secret = module.secret_manager.slack_signing_secret
     google_api_key = module.secret_manager.google_api_key
     google_cx_id = module.secret_manager.google_cx_id
-    postgres_url = "postgresql://${module.postgres.db_user}:${module.postgres.db_password}@${module.postgres.private_ip_address}:5432/${module.postgres.database_name}"
-    deletion_protection = false
 }
 
 module "postgres" {

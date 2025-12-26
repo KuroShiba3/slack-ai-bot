@@ -9,7 +9,7 @@ resource "google_cloud_run_v2_service" "main" {
 
         scaling {
             min_instance_count = var.min_instance_count
-            max_instance_count = 5
+            max_instance_count = var.max_instance_count
         }
 
         vpc_access {
@@ -36,7 +36,12 @@ resource "google_cloud_run_v2_service" "main" {
 
             env {
                 name  = "POSTGRES_URL"
-                value = var.postgres_url
+                value_source {
+                    secret_key_ref {
+                        secret  = var.postgres_url
+                        version = "latest"
+                    }
+                }
             }
 
             env {

@@ -1,3 +1,17 @@
+resource "google_secret_manager_secret" "postgres_url" {
+    secret_id = "${var.environment}-postgres-url"
+
+    replication {
+        auto {}
+    }
+}
+
+resource "google_secret_manager_secret_iam_member" "postgres_url_access" {
+    secret_id = google_secret_manager_secret.postgres_url.id
+    role      = "roles/secretmanager.secretAccessor"
+    member    = "serviceAccount:${var.service_account_email}"
+}
+
 resource "google_secret_manager_secret" "slack_bot_token" {
     secret_id = "${var.environment}-slack-bot-token"
 
