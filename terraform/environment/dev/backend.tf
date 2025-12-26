@@ -1,5 +1,5 @@
 terraform {
     backend "gcs" {
-        bucket = "slackbotai-terraform-state"
+        bucket = "slackaibot-terraform-state"
     }
 }
