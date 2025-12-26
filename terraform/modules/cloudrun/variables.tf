@@ -53,6 +53,28 @@ variable "cpu" {
     type        = string
 }
 
+variable "min_instance_count" {
+    description = "Minimum number of instances"
+    type        = number
+    default     = 1
+}
+
+variable "max_instance_count" {
+    description = "Maximum number of instances"
+    type        = number
+    default     = 3
+}
+
+variable "deletion_protection" {
+    description = "Cloud Runサービスの削除保護設定"
+    type        = bool
+}
+
+variable "postgres_url" {
+    description = "PostgreSQL接続URL"
+    type        = string
+}
+
 variable "slack_bot_token" {
     description = "Slack Bot TokenのSecret ID"
     type        = string
@@ -76,15 +98,4 @@ variable "google_cx_id" {
 variable "postgres_url" {
     description = "PostgreSQL connection URL"
     type        = string
-}
-
-variable "deletion_protection" {
-    description = "Cloud Runサービスの削除保護設定"
-    type        = bool
-}
-
-variable "min_instance_count" {
-    description = "Minimum number of instances"
-    type        = number
-    default     = 1
 }
