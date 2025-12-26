@@ -21,8 +21,8 @@ resource "google_sql_database_instance" "main" {
   }
 }
 
-resource "google_sql_database" "langgraph" {
-  name     = "langgraph"
+resource "google_sql_database" "main" {
+  name     = "slackaibot"
   instance = google_sql_database_instance.main.name
 }
 
