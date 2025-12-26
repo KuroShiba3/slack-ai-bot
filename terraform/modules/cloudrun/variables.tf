@@ -71,8 +71,9 @@ variable "deletion_protection" {
 }
 
 variable "postgres_url" {
-    description = "PostgreSQL接続URL"
+    description = "PostgreSQL接続URL（完全な接続文字列）"
     type        = string
+    sensitive   = true
 }
 
 variable "slack_bot_token" {
@@ -92,10 +93,5 @@ variable "google_api_key" {
 
 variable "google_cx_id" {
     description = "Google CX IDのSecret ID"
-    type        = string
-}
-
-variable "postgres_url" {
-    description = "PostgreSQL connection URL"
     type        = string
 }

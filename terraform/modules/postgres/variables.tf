@@ -42,6 +42,11 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "db_name" {
+    description = "Database name"
+    type        = string
+}
+
 variable "deletion_protection" {
     description = "Cloud Runサービスの削除保護設定"
     type        = bool

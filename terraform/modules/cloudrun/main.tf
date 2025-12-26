@@ -35,13 +35,13 @@ resource "google_cloud_run_v2_service" "main" {
             }
 
             env {
+                name = "ENV"
+                value = var.environment
+            }
+
+            env {
                 name  = "POSTGRES_URL"
-                value_source {
-                    secret_key_ref {
-                        secret  = var.postgres_url
-                        version = "latest"
-                    }
-                }
+                value = var.postgres_url
             }
 
             env {
@@ -75,7 +75,7 @@ resource "google_cloud_run_v2_service" "main" {
             }
 
             env {
-                name = "GOOGLE_CX"
+                name = "GOOGLE_CSE_ID"
                 value_source {
                     secret_key_ref {
                         secret  = var.google_cx_id

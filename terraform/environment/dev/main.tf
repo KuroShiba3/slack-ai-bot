@@ -36,7 +36,7 @@ module "cloudrun" {
     min_instance_count = 0
     max_instance_count = 1
     deletion_protection = false
-    postgres_url = module.secret_manager.postgres_url
+    postgres_url = "postgresql://${module.secret_manager.postgres_user}:${module.secret_manager.postgres_password}@${module.postgres.private_ip_address}:5432/${module.postgres.db_name}"
     slack_bot_token = module.secret_manager.slack_bot_token
     slack_signing_secret = module.secret_manager.slack_signing_secret
     google_api_key = module.secret_manager.google_api_key
@@ -54,5 +54,6 @@ module "postgres" {
     edition = "ENTERPRISE"
     db_user = module.secret_manager.postgres_user
     db_password = module.secret_manager.postgres_password
+    db_name = "slackaibot"
     deletion_protection = false
 }

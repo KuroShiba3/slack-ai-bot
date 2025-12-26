@@ -3,9 +3,9 @@ output "private_ip_address" {
   value       = google_sql_database_instance.main.private_ip_address
 }
 
-output "database_name" {
+output "db_name" {
   description = "Database name"
-  value       = google_sql_database.langgraph.name
+  value       = google_sql_database.main.name
 }
 
 output "db_user" {
