@@ -61,7 +61,7 @@ async def lifespan(app: FastAPI):
     logger.info("データベース接続プールをクローズしました")
 
 
-fastapi_app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
 
 
 async def setup_socket_mode():
@@ -107,10 +107,8 @@ def main():
     if ENV == "local":
         asyncio.run(setup_socket_mode())
     elif ENV in ["dev", "prod"]:
-        # FastAPI lifespanがslack_adapterを初期化するので、ここでは何もしない
-        # slack_adapter.setup_routes()はlifespanイベント後に実行される
         uvicorn.run(
-            "src.main:fastapi_app", host="0.0.0.0", port=8000, reload=(ENV == "dev")
+            "src.main:app", host="0.0.0.0", port=8000, reload=(ENV == "dev")
         )
 
 
