@@ -26,7 +26,9 @@ class Feedback:
         self._updated_at = updated_at
 
     @classmethod
-    def create(cls, user_id: str, message_id: UUID, feedback: FeedbackType) -> "Feedback":
+    def create(
+        cls, user_id: str, message_id: UUID, feedback: FeedbackType
+    ) -> "Feedback":
         created_at = datetime.now()
         updated_at = created_at
         return cls(
