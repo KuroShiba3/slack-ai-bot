@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 from .general_answer_task_log import GeneralAnswerTaskLog
 from .task_log import TaskLog
-from .web_search_task_log import WebSearchTaskLog
+from .web_search_task_log import SearchResult, WebSearchTaskLog
 
 
 class AgentName(Enum):
@@ -138,14 +138,17 @@ class Task:
 
     def update_result(self, result: str) -> None:
         """タスクの結果を更新"""
+        if self._status != TaskStatus.COMPLETED:
+            raise ValueError(
+                f"完了していないタスクの結果は更新できません: {self._status}"
+            )
+
         if not result or not result.strip():
             self.fail("タスク実行結果が空でした")
             return
 
         self._result = result
-        if self._status == TaskStatus.IN_PROGRESS:
-            self._status = TaskStatus.COMPLETED
-            self._completed_at = datetime.now()
+        self._completed_at = datetime.now()
 
     def fail(self, error_message: str) -> None:
         """タスクを失敗として記録"""
@@ -153,6 +156,18 @@ class Task:
         self._result = f"Error: {error_message}"
         self._completed_at = datetime.now()
 
-    def add_log_attempt(self, **kwargs) -> None:
-        """試行をタスクログに追加"""
-        self._task_log.add_attempt(**kwargs)
+    def add_web_search_attempt(self, query: str, results: list[SearchResult]) -> None:
+        """Web検索の試行を記録"""
+        if not isinstance(self._task_log, WebSearchTaskLog):
+            raise TypeError(
+                f"このタスクはWeb検索タスクではありません。AgentName: {self._agent_name}"
+            )
+        self._task_log.add_attempt(query=query, results=results)
+
+    def add_general_answer_attempt(self, response: str) -> None:
+        """一般回答の試行を記録"""
+        if not isinstance(self._task_log, GeneralAnswerTaskLog):
+            raise TypeError(
+                f"このタスクは一般回答タスクではありません。AgentName: {self._agent_name}"
+            )
+        self._task_log.add_attempt(response=response)
