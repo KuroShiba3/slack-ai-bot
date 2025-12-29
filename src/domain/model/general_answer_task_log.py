@@ -15,16 +15,18 @@ class GeneralAnswerTaskLog:
     def create(cls) -> "GeneralAnswerTaskLog":
         return cls(attempts=[])
 
+    @classmethod
+    def reconstruct(cls, attempts: list[GenerationAttempt]) -> "GeneralAnswerTaskLog":
+        return cls(attempts=attempts)
+
     @property
     def attempts(self) -> list[GenerationAttempt]:
         """すべての試行を取得"""
         return self._attempts
 
-    def add_attempt(self, **kwargs: Any) -> None:
+    def add_attempt(self, response: str) -> None:
         """生成試行を記録"""
-        response = kwargs.get("response")
-        if response is not None:
-            self._attempts.append(GenerationAttempt(response=response))
+        self._attempts.append(GenerationAttempt(response=response))
 
     def to_dict(self) -> dict[str, Any]:
         """辞書形式に変換"""
