@@ -21,6 +21,12 @@ class TaskPlan:
     def create(cls, message_id: UUID, tasks: list[Task]) -> "TaskPlan":
         return cls(id=uuid4(), message_id=message_id, tasks=tasks)
 
+    @classmethod
+    def reconstruct(
+        cls, id: UUID, message_id: UUID, tasks: list[Task]
+    ) -> "TaskPlan":
+        return cls(id=id, message_id=message_id, tasks=tasks)
+
     @property
     def id(self) -> UUID:
         return self._id
