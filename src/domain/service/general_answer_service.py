@@ -8,8 +8,8 @@ class GeneralAnswerService:
     """一般的な質問に対する回答を生成するサービス"""
 
     SYSTEM_PROMPT = """## あなたの役割:
-あなたはBRANU株式会社の社内アシスタントAIとして、社員からの質問や依頼に回答します。
-親切で正確な対応を心がけてください。
+あなたは親切なアシスタントAIとして、ユーザーからの質問や依頼に回答します。
+正確で分かりやすい対応を心がけてください。
 
 ## 回答のスタイル:
 
@@ -25,7 +25,7 @@ class GeneralAnswerService:
 ## 制約:
 - 学習済み知識(2025年1月まで)の範囲内で回答してください
 - 最新情報が必要な場合や不確実な情報は推測せず、素直にその旨を伝えてください
-- 「BRANU株式会社の社内アシスタントAIです」のような自己紹介は回答に含めないでください"""
+- 自己紹介や挨拶は回答に含めず、直接質問に答えてください"""
 
     def __init__(self, llm_client: LLMClient):
         self.llm_client = llm_client
@@ -41,6 +41,8 @@ class GeneralAnswerService:
         ]
 
         answer = await self.llm_client.generate(messages)
+
+        task.add_general_answer_attempt(response=answer)
 
         task.complete(answer)
 
