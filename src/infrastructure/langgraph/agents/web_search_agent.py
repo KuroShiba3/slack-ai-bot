@@ -73,7 +73,7 @@ class WebSearchAgent:
 
             for query in queries:
                 search_results = await self.search_client.search(query)
-                task.add_log_attempt(query=query, results=search_results)
+                task.add_web_search_attempt(query=query, results=search_results)
 
             return Command(update={}, goto="generate_task_result")
 
