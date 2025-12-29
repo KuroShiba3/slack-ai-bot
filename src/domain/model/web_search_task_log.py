@@ -23,17 +23,18 @@ class WebSearchTaskLog:
     def create(cls) -> "WebSearchTaskLog":
         return cls(attempts=[])
 
+    @classmethod
+    def reconstruct(cls, attempts: list[SearchAttempt]) -> "WebSearchTaskLog":
+        return cls(attempts=attempts)
+
     @property
     def attempts(self) -> list[SearchAttempt]:
         """すべての試行を取得"""
         return self._attempts
 
-    def add_attempt(self, **kwargs: Any) -> None:
+    def add_attempt(self, query: str, results: list[SearchResult]) -> None:
         """検索試行を記録"""
-        query = kwargs.get("query")
-        results = kwargs.get("results")
-        if query is not None and results is not None:
-            self._attempts.append(SearchAttempt(query=query, results=results))
+        self._attempts.append(SearchAttempt(query=query, results=results))
 
     def get_all_queries(self) -> list[str]:
         """すべての検索クエリを取得"""
