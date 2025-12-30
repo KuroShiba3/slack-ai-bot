@@ -64,10 +64,10 @@ class TaskResultGenerationService:
 
         task_result = await self.llm_client.generate(messages)
 
+        if task.status == TaskStatus.PENDING:
+            task.complete(task_result)
         if task.status == TaskStatus.COMPLETED:
             task.update_result(task_result)
-        else:
-            task.complete(task_result)
 
     def _get_search_results_from_task(self, task: Task) -> list[SearchResult]:
         """タスクログから検索結果を取得する"""
