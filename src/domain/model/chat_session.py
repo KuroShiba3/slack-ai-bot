@@ -1,5 +1,13 @@
 from datetime import datetime
 
+from src.domain.exception.chat_session_exception import (
+    AssistantMessageNotFoundError,
+    InvalidAssistantMessageRoleError,
+    InvalidUserMessageRoleError,
+    NoneTaskPlanError,
+    UserMessageNotFoundError,
+)
+
 from .message import Message, Role
 from .task_plan import TaskPlan
 
@@ -96,25 +104,25 @@ class ChatSession:
     def updated_at(self) -> datetime:
         return self._updated_at
 
-    def last_user_message(self) -> Message | None:
+    def last_user_message(self) -> Message:
         """直近のユーザーメッセージを取得"""
         for message in reversed(self._messages):
             if message.role == Role.USER:
                 return message
-        return None
+        raise UserMessageNotFoundError()
 
-    def last_assistant_message_id(self) -> str | None:
+    def last_assistant_message_id(self) -> str:
         """直近のアシスタントメッセージのIDを取得"""
         for message in reversed(self._messages):
             if message.role == Role.ASSISTANT:
                 return str(message.id)
-        return None
+        raise AssistantMessageNotFoundError()
 
     def add_user_message(self, content: str | Message):
         """ユーザーからのメッセージを追加"""
         if isinstance(content, Message):
             if content.role != Role.USER:
-                raise ValueError("USER以外のメッセージは追加できません")
+                raise InvalidUserMessageRoleError()
             self._messages.append(content)
         else:
             message = Message.create_user_message(content)
@@ -124,7 +132,7 @@ class ChatSession:
         """アシスタントからのメッセージを追加"""
         if isinstance(content, Message):
             if content.role != Role.ASSISTANT:
-                raise ValueError("ASSISTANT以外のメッセージは追加できません")
+                raise InvalidAssistantMessageRoleError()
             self._messages.append(content)
         else:
             message = Message.create_assistant_message(content)
@@ -132,4 +140,6 @@ class ChatSession:
 
     def add_task_plan(self, task_plan: TaskPlan):
         """タスク計画を追加"""
+        if task_plan is None:
+            raise NoneTaskPlanError()
         self._task_plans.append(task_plan)
