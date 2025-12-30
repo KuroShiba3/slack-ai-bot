@@ -6,8 +6,7 @@ from fastapi import FastAPI
 
 from .config import ENV
 from .di_container import DIContainer
-from .infrastructure.database import DatabasePool
-from .infrastructure.database import run_migrations
+from .infrastructure.database import DatabasePool, run_migrations
 from .infrastructure.external.slack.slack_adapter import SlackAdapter
 from .log import get_logger
 
@@ -24,7 +23,7 @@ async def lifespan(app: FastAPI):
     """FastAPIのライフサイクル管理"""
     global slack_adapter, container, slack_message_controller
 
-    logger.info("アプリケーションを起動中...")
+    logger.info(f"HTTP Mode (ENV={ENV}) で起動中...")
 
     logger.info("データベースマイグレーションを実行中...")
     run_migrations()
@@ -69,6 +68,8 @@ async def setup_socket_mode():
     global slack_adapter, container, slack_message_controller
 
     try:
+        logger.info("Socket Mode (ENV=local) で起動中...")
+
         # データベースマイグレーションを実行
         logger.info("データベースマイグレーションを実行中...")
         run_migrations()
@@ -107,9 +108,7 @@ def main():
     if ENV == "local":
         asyncio.run(setup_socket_mode())
     elif ENV in ["dev", "prod"]:
-        uvicorn.run(
-            "src.main:app", host="0.0.0.0", port=8000, reload=(ENV == "dev")
-        )
+        uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=(ENV == "dev"))
 
 
 if __name__ == "__main__":
