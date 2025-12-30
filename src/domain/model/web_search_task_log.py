@@ -1,6 +1,11 @@
 from dataclasses import dataclass
 from typing import Any
 
+from src.domain.exception.task_log_exception import (
+    EmptySearchQueryError,
+    InvalidSearchResultsError,
+)
+
 
 @dataclass(frozen=True)
 class SearchResult:
@@ -34,6 +39,10 @@ class WebSearchTaskLog:
 
     def add_attempt(self, query: str, results: list[SearchResult]) -> None:
         """検索試行を記録"""
+        if not query or not query.strip():
+            raise EmptySearchQueryError()
+        if results is None:
+            raise InvalidSearchResultsError()
         self._attempts.append(SearchAttempt(query=query, results=results))
 
     def get_all_queries(self) -> list[str]:
