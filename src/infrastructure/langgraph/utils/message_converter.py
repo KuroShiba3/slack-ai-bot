@@ -1,5 +1,10 @@
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 
+from src.infrastructure.exception.llm_exception import (
+    UnsupportedMessageRoleError,
+    UnsupportedMessageTypeError,
+)
+
 from ....domain.model import Message, Role
 
 
@@ -17,7 +22,7 @@ class MessageConverter:
             elif msg.role == Role.SYSTEM:
                 langchain_messages.append(SystemMessage(content=msg.content))
             else:
-                raise ValueError(f"未対応のロールです: {msg.role}")
+                raise UnsupportedMessageRoleError(msg.role.value)
 
         return langchain_messages
 
@@ -30,4 +35,4 @@ class MessageConverter:
             return Message.create_assistant_message(message.content)  # type: ignore
         if isinstance(message, SystemMessage):
             return Message.create_system_message(message.content)  # type: ignore
-        raise ValueError(f"未対応のメッセージタイプです: {type(message)}")
+        raise UnsupportedMessageTypeError(str(type(message)))
