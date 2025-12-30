@@ -3,8 +3,10 @@ from typing import TypeVar
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel
 
-from ....domain.service.port.llm_client import LLMClient
+from src.infrastructure.exception.llm_exception import UnsupportedMessageRoleError
+
 from ....domain.model import Message, Role
+from ....domain.service.port.llm_client import LLMClient
 from .model_factory import ModelFactory
 
 T = TypeVar("T", bound=BaseModel)
@@ -29,7 +31,7 @@ class LangChainLLMClient(LLMClient):
             elif msg.role == Role.SYSTEM:
                 langchain_messages.append(SystemMessage(content=msg.content))
             else:
-                raise ValueError(f"未対応のロールです: {msg.role}")
+                raise UnsupportedMessageRoleError(msg.role.value)
 
         return langchain_messages
 
