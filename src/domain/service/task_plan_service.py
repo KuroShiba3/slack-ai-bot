@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from src.domain.exception.service_exception import UnknownAgentError
+
 from ...domain.service.port import LLMClient
 from ..model import ChatSession, Message, Task, TaskPlan
 
@@ -57,8 +59,6 @@ class TaskPlanningService:
             )
 
         latest_message = chat_session.last_user_message()
-        if not latest_message:
-            raise ValueError("ユーザーメッセージが見つかりません")
 
         messages = [
             Message.create_system_message(self.SYSTEM_PROMPT),
@@ -79,7 +79,7 @@ class TaskPlanningService:
             elif task_info.next_agent == "general_answer":
                 task = Task.create_general_answer(task_info.task_description)
             else:
-                raise ValueError(f"不明なエージェントです: {task_info.next_agent}")
+                raise UnknownAgentError(task_info.next_agent)
 
             tasks.append(task)
 
