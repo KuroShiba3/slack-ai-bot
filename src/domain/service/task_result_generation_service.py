@@ -64,7 +64,7 @@ class TaskResultGenerationService:
 
         task_result = await self.llm_client.generate(messages)
 
-        if task.status == TaskStatus.PENDING:
+        if task.status == TaskStatus.IN_PROGRESS:
             task.complete(task_result)
         if task.status == TaskStatus.COMPLETED:
             task.update_result(task_result)
