@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any
 
+from src.domain.exception.task_log_exception import EmptyResponseError
+
 
 @dataclass
 class GenerationAttempt:
@@ -26,6 +28,8 @@ class GeneralAnswerTaskLog:
 
     def add_attempt(self, response: str) -> None:
         """生成試行を記録"""
+        if not response or not response.strip():
+            raise EmptyResponseError()
         self._attempts.append(GenerationAttempt(response=response))
 
     def to_dict(self) -> dict[str, Any]:
