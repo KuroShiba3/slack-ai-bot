@@ -1,3 +1,5 @@
+from src.application.exception.usecase_exception import InvalidInputError
+
 from ...domain.model import ChatSession
 from ...domain.repository import ChatSessionRepository
 from ...domain.service.interfaces import WorkflowService
@@ -19,9 +21,12 @@ class AnswerToUserRequestUseCase:
     async def execute(
         self, input_dto: AnswerToUserRequestInput
     ) -> AnswerToUserRequestOutput:
+        if not input_dto.user_message:
+            raise InvalidInputError("user_message")
+
         conversation_id = input_dto.context.get("conversation_id")
         if not conversation_id:
-            raise ValueError("conversation_idがコンテキストに存在しません")
+            raise InvalidInputError("conversation_id")
 
         # チャットセッションを取得または作成
         chat_session = await self._chat_session_repository.find_by_id(conversation_id)
@@ -47,5 +52,5 @@ class AnswerToUserRequestUseCase:
 
         return AnswerToUserRequestOutput(
             answer=result.answer,
-            message_id=chat_session.last_assistant_message_id() or "",
+            message_id=chat_session.last_assistant_message_id(),
         )

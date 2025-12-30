@@ -4,6 +4,7 @@ from ...domain.model.feedback import Feedback, FeedbackType
 from ...domain.repository import FeedbackRepository
 from ...log import get_logger
 from ..dto.feedback_usecase import FeedbackInput
+from ..exception.usecase_exception import InvalidInputError
 
 logger = get_logger(__name__)
 
@@ -13,38 +14,34 @@ class FeedbackUseCase:
         self._feedback_repository = feedback_repository
 
     async def execute(self, input_dto: FeedbackInput) -> FeedbackInput:
-        try:
-            feedback_type = FeedbackType(input_dto.feedback_type)
-            message_id = UUID(input_dto.message_id)
+        if not input_dto.message_id:
+            raise InvalidInputError("message_id")
+        if not input_dto.feedback_type:
+            raise InvalidInputError("feedback_type")
+        if not input_dto.user_id:
+            raise InvalidInputError("user_id")
 
-            # 既存のフィードバックを取得
-            existing_feedback = (
-                await self._feedback_repository.find_by_message_and_user(
-                    message_id=message_id,
-                    user_id=input_dto.user_id,
-                )
-            )
+        feedback_type = FeedbackType(input_dto.feedback_type)
+        message_id = UUID(input_dto.message_id)
 
-            if existing_feedback:
-                if feedback_type == FeedbackType.GOOD:
-                    existing_feedback.make_positive()
-                else:
-                    existing_feedback.make_negative()
+        existing_feedback = await self._feedback_repository.find_by_message_and_user(
+            message_id=message_id,
+            user_id=input_dto.user_id,
+        )
 
-                await self._feedback_repository.save(existing_feedback)
-                logger.debug(
-                    f"フィードバックを更新しました: message_id={message_id}, type={feedback_type.value}"
-                )
+        if existing_feedback:
+            # 既存のフィードバックを更新
+            if feedback_type == FeedbackType.GOOD:
+                existing_feedback.make_positive()
             else:
-                feedback = Feedback.create(
-                    user_id=input_dto.user_id,
-                    message_id=message_id,
-                    feedback=feedback_type,
-                )
-                await self._feedback_repository.save(feedback)
-                logger.debug(
-                    f"フィードバックを作成しました: message_id={message_id}, type={feedback_type.value}"
-                )
+                existing_feedback.make_negative()
 
-        except Exception as e:
-            logger.error(f"フィードバックの保存に失敗しました: {e}", exc_info=True)
+            await self._feedback_repository.save(existing_feedback)
+        else:
+            # 見つからない場合は新規作成
+            feedback = Feedback.create(
+                user_id=input_dto.user_id,
+                message_id=message_id,
+                feedback=feedback_type,
+            )
+            await self._feedback_repository.save(feedback)
