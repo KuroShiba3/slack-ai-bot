@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from src.domain.exception.service_exception import TaskResultNotFoundError
+
 from ...domain.service.port import LLMClient
 from ..model import Message, SearchResult, Task, TaskEvaluation, WebSearchTaskLog
 
@@ -38,7 +40,7 @@ class TaskResultEvaluationService:
     async def execute(self, task: Task) -> TaskEvaluation:
         """タスク結果を評価する"""
         if not task.result:
-            raise ValueError("タスク結果が存在しません")
+            raise TaskResultNotFoundError()
 
         class _TaskEvaluationSchema(BaseModel):
             is_satisfactory: bool = Field(description="タスク結果が十分か")
@@ -61,15 +63,15 @@ class TaskResultEvaluationService:
             Message.create_user_message(human_prompt),
         ]
 
-        llm_output = await self.llm_client.generate_with_structured_output(
+        evaluation = await self.llm_client.generate_with_structured_output(
             messages, _TaskEvaluationSchema
         )
 
         return TaskEvaluation(
-            is_satisfactory=llm_output.is_satisfactory,
-            need=llm_output.need,
-            reason=llm_output.reason,
-            feedback=llm_output.feedback,
+            is_satisfactory=evaluation.is_satisfactory,
+            need=evaluation.need,
+            reason=evaluation.reason,
+            feedback=evaluation.feedback,
         )
 
     def _get_search_results_from_task(self, task: Task) -> list[SearchResult]:
