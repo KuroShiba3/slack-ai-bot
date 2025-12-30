@@ -2,6 +2,13 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
+from src.domain.exception.task_exception import (
+    EmptyTaskDescriptionError,
+    MissingTaskLogError,
+    TaskNotCompletedError,
+    TaskNotInProgressError,
+)
+
 from .general_answer_task_log import GeneralAnswerTaskLog
 from .task_log import TaskLog
 from .web_search_task_log import SearchResult, WebSearchTaskLog
@@ -31,9 +38,9 @@ class Task:
         completed_at: datetime | None = None,
     ):
         if not description:
-            raise ValueError("タスクの説明が空です。")
+            raise EmptyTaskDescriptionError()
         if not task_log:
-            raise ValueError("タスクログが必要です。")
+            raise MissingTaskLogError()
 
         self._id = id
         self._description = description
@@ -126,7 +133,7 @@ class Task:
     def complete(self, result: str) -> None:
         """タスクを完了し、結果を記録"""
         if self._status != TaskStatus.IN_PROGRESS:
-            raise ValueError(f"実行中でないタスクは完了できません: {self._status}")
+            raise TaskNotInProgressError(self._status.value)
 
         if not result or not result.strip():
             self.fail("タスク実行結果が空でした")
@@ -139,9 +146,7 @@ class Task:
     def update_result(self, result: str) -> None:
         """タスクの結果を更新"""
         if self._status != TaskStatus.COMPLETED:
-            raise ValueError(
-                f"完了していないタスクの結果は更新できません: {self._status}"
-            )
+            raise TaskNotCompletedError(self._status.value)
 
         if not result or not result.strip():
             self.fail("タスク実行結果が空でした")
