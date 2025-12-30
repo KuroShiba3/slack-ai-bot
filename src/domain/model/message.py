@@ -2,6 +2,8 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
+from src.domain.exception.message_exception import EmptyMessageContentError
+
 
 class Role(Enum):
     SYSTEM = "system"
@@ -11,8 +13,8 @@ class Role(Enum):
 
 class Message:
     def __init__(self, id: UUID, role: Role, content: str, created_at: datetime):
-        if not content.strip():
-            raise ValueError("メッセージの内容が空です。")
+        if not content or not content.strip():
+            raise EmptyMessageContentError()
 
         self._id = id
         self._role = role
