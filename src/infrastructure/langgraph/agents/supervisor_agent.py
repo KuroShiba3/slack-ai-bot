@@ -1,6 +1,8 @@
 from langgraph.graph import END
 from langgraph.types import Command, Send
 
+from src.infrastructure.exception.agent_exception import MissingStateError
+
 from ....domain.model import AgentName
 from ....domain.service import AnswerGenerationService, TaskPlanningService
 from ....log import get_logger
@@ -20,49 +22,44 @@ class SupervisorAgent:
 
     async def plan_tasks(self, state: BaseState) -> Command:
         """タスク計画を生成し、各タスクを並列実行するノード"""
-        try:
-            chat_session = state.get("chat_session")
-            if not chat_session:
-                raise ValueError("chat_sessionがステートに存在しません")
+        chat_session = state.get("chat_session")
+        if not chat_session:
+            raise MissingStateError("chat_session")
 
-            task_plan = await self.task_planning_service.execute(chat_session)
+        task_plan = await self.task_planning_service.execute(chat_session)
 
-            chat_session.add_task_plan(task_plan)
+        chat_session.add_task_plan(task_plan)
 
-            sends = []
-            for task in task_plan.tasks:
-                send_data = {
-                    "task": task,
-                    "chat_session": chat_session,
-                }
+        sends = []
+        for task in task_plan.tasks:
+            send_data = {
+                "task": task,
+                "chat_session": chat_session,
+            }
 
-                if task.agent_name == AgentName.WEB_SEARCH:
-                    send_data.update(
-                        {
-                            "attempt": 0,
-                            "feedback": None,
-                            "queries": None,
-                        }
-                    )
+            if task.agent_name == AgentName.WEB_SEARCH:
+                send_data.update(
+                    {
+                        "attempt": 0,
+                        "feedback": None,
+                        "queries": None,
+                    }
+                )
 
-                sends.append(Send(task.agent_name.value, send_data))
+            sends.append(Send(task.agent_name.value, send_data))
 
-            return Command(update={"task_plan": task_plan}, goto=sends)
-
-        except Exception as e:
-            logger.error(f"タスク計画生成でエラーが発生しました: {e!s}", exc_info=True)
-            raise
+        return Command(update={"task_plan": task_plan}, goto=sends)
 
     async def generate_final_answer(self, state: BaseState) -> Command:
         """最終回答を生成するノード"""
         try:
             chat_session = state.get("chat_session")
             if not chat_session:
-                raise ValueError("chat_sessionがステートに存在しません")
+                raise MissingStateError("chat_session")
 
             task_plan = state.get("task_plan")
             if not task_plan:
-                raise ValueError("TaskPlanが見つかりません")
+                raise MissingStateError("task_plan")
 
             answer_message = await self.answer_generation_service.execute(
                 chat_session, task_plan
