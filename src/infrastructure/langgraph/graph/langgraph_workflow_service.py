@@ -2,6 +2,8 @@ import asyncio
 
 from langgraph.graph import StateGraph
 
+from src.infrastructure.exception.config_exception import MissingEnvironmentVariableError
+
 from ....config import GOOGLE_API_KEY, GOOGLE_CSE_ID
 from ....domain.model import ChatSession, WorkflowResult
 from ....domain.service import (
@@ -26,9 +28,7 @@ class LangGraphWorkflowService:
     _graph_lock = asyncio.Lock()
     _graph_semaphore = asyncio.Semaphore(60)
 
-    def __init__(
-        self, model_factory: ModelFactory
-    ):
+    def __init__(self, model_factory: ModelFactory):
         self._model_factory = model_factory
 
         gemini_2_0_flash_client = LangChainLLMClient(
@@ -39,8 +39,14 @@ class LangGraphWorkflowService:
             model_factory=model_factory, model_name="gemini-2.5-flash"
         )
 
-        if not GOOGLE_API_KEY or not GOOGLE_CSE_ID:
-            raise ValueError("Google Search APIの環境変数が設定されていません")
+        missing_vars = []
+        if not GOOGLE_API_KEY:
+            missing_vars.append("GOOGLE_API_KEY")
+        if not GOOGLE_CSE_ID:
+            missing_vars.append("GOOGLE_CSE_ID")
+        if missing_vars:
+            raise MissingEnvironmentVariableError(missing_vars)
+
         search_client = GoogleSearchClient(
             google_api_key=GOOGLE_API_KEY, google_cse_id=GOOGLE_CSE_ID
         )
@@ -77,23 +83,15 @@ class LangGraphWorkflowService:
 
     async def execute(self, chat_session: ChatSession, context: dict) -> WorkflowResult:
         async with self._graph_semaphore:
-            try:
-                initial_state = {"chat_session": chat_session, "context": context}
-                graph = await self._get_graph()
-                result = await graph.ainvoke(  # type: ignore
-                    initial_state
-                )
-                answer = result.get("answer", "")
-                task_plan = result.get("task_plan")
+            initial_state = {"chat_session": chat_session, "context": context}
+            graph = await self._get_graph()
+            result = await graph.ainvoke(  # type: ignore
+                initial_state
+            )
+            answer = result.get("answer", "")
+            task_plan = result.get("task_plan")
 
-                if not task_plan:
-                    raise ValueError("タスク計画が生成されませんでした")
-
-                return WorkflowResult(answer=answer, task_plan=task_plan)
-
-            except Exception as e:
-                logger.error(f"ワークフロー実行中にエラーが発生しました: {e}")
-                raise
+            return WorkflowResult(answer=answer, task_plan=task_plan)
 
     def build_graph(self) -> StateGraph:
         """LangGraphのグラフを構築"""
