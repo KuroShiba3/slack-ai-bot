@@ -1,3 +1,6 @@
+import pytest
+
+from src.domain.exception.task_log_exception import EmptyResponseError
 from src.domain.model.general_answer_task_log import GeneralAnswerTaskLog
 
 
@@ -38,3 +41,19 @@ def test_from_dict_single_attempt():
 
     assert len(log.attempts) == 1
     assert log.attempts[0].response == "復元された回答"
+
+
+def test_add_attempt_with_empty_response_raises_error():
+    """空のレスポンスを追加するとエラーになるテスト"""
+    log = GeneralAnswerTaskLog.create()
+
+    with pytest.raises(EmptyResponseError, match="生成レスポンスが空です"):
+        log.add_attempt(response="")
+
+
+def test_add_attempt_with_whitespace_only_response_raises_error():
+    """空白のみのレスポンスを追加するとエラーになるテスト"""
+    log = GeneralAnswerTaskLog.create()
+
+    with pytest.raises(EmptyResponseError, match="生成レスポンスが空です"):
+        log.add_attempt(response="   ")

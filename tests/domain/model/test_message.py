@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from src.domain.exception.message_exception import EmptyMessageContentError
 from src.domain.model.message import Message, Role
 
 
@@ -69,8 +70,14 @@ def test_reconstruct():
 
 def test_empty_content_raises_error():
     """空のコンテンツでエラーが発生することをテスト"""
-    with pytest.raises(ValueError, match="メッセージの内容が空です"):
+    with pytest.raises(EmptyMessageContentError, match="メッセージの内容が空です"):
         Message.create_user_message("")
+
+
+def test_whitespace_only_content_raises_error():
+    """空白文字のみのコンテンツでエラーが発生することをテスト"""
+    with pytest.raises(EmptyMessageContentError, match="メッセージの内容が空です"):
+        Message.create_user_message("   ")
 
 
 def test_message_id_is_unique():

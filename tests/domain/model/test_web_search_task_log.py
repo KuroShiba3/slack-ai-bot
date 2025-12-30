@@ -1,5 +1,9 @@
 import pytest
 
+from src.domain.exception.task_log_exception import (
+    EmptySearchQueryError,
+    InvalidSearchResultsError,
+)
 from src.domain.model.web_search_task_log import (
     SearchAttempt,
     SearchResult,
@@ -189,3 +193,41 @@ def test_from_dict_multiple_attempts():
     assert len(log.attempts) == 2
     assert log.attempts[0].query == "Python"
     assert log.attempts[1].query == "JavaScript"
+
+
+def test_add_attempt_with_empty_query_raises_error():
+    """空のクエリで試行を追加するとエラーになるテスト"""
+    log = WebSearchTaskLog.create()
+    results = [SearchResult(url="https://example.com", title="Test", content="Content")]
+
+    with pytest.raises(EmptySearchQueryError, match="検索クエリが空です"):
+        log.add_attempt(query="", results=results)
+
+
+def test_add_attempt_with_whitespace_only_query_raises_error():
+    """空白のみのクエリで試行を追加するとエラーになるテスト"""
+    log = WebSearchTaskLog.create()
+    results = [SearchResult(url="https://example.com", title="Test", content="Content")]
+
+    with pytest.raises(EmptySearchQueryError, match="検索クエリが空です"):
+        log.add_attempt(query="   ", results=results)
+
+
+def test_add_attempt_with_empty_results_is_allowed():
+    """空の検索結果は許容されるテスト"""
+    log = WebSearchTaskLog.create()
+
+    # 空の結果リストでも追加できる
+    log.add_attempt(query="Python", results=[])
+
+    assert len(log.attempts) == 1
+    assert log.attempts[0].query == "Python"
+    assert log.attempts[0].results == []
+
+
+def test_add_attempt_with_none_results_raises_error():
+    """None の検索結果を追加するとエラーになるテスト"""
+    log = WebSearchTaskLog.create()
+
+    with pytest.raises(InvalidSearchResultsError, match="検索結果がNoneです"):
+        log.add_attempt(query="Python", results=None)

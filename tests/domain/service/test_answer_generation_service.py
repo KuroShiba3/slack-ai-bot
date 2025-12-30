@@ -3,6 +3,8 @@ from uuid import uuid4
 import pytest
 from pytest_mock import MockerFixture
 
+from src.domain.exception.chat_session_exception import UserMessageNotFoundError
+from src.domain.exception.task_plan_exception import AllTasksFailedError
 from src.domain.model.chat_session import ChatSession
 from src.domain.model.message import Message
 from src.domain.model.task import Task
@@ -149,14 +151,14 @@ async def test_execute_excludes_latest_user_message_from_history(
 
 @pytest.mark.asyncio
 async def test_execute_raises_error_when_no_user_message(
-    answer_service, mock_llm_client, task_plan_with_completed_tasks
+    answer_service, task_plan_with_completed_tasks
 ):
     """ユーザーメッセージがない場合にエラーを投げるテスト"""
     empty_session = ChatSession.create(
         id="session-1", thread_id=None, user_id="U12345", channel_id="C12345"
     )
 
-    with pytest.raises(ValueError, match="最終回答を生成するにはユーザーメッセージが必要です"):
+    with pytest.raises(UserMessageNotFoundError, match="ユーザーメッセージが存在しません"):
         await answer_service.execute(empty_session, task_plan_with_completed_tasks)
 
 
@@ -202,7 +204,7 @@ async def test_build_human_prompt_format(answer_service):
 async def test_execute_with_empty_task_results(
     answer_service, mock_llm_client, chat_session_with_messages
 ):
-    """タスク結果が空の場合のテスト"""
+    """タスク結果が空の場合はAllTasksFailedErrorを投げるテスト"""
     mock_llm_client.generate.return_value = "回答"
 
     # 結果が設定されていないタスク
@@ -210,15 +212,8 @@ async def test_execute_with_empty_task_results(
     # task.complete()を呼ばない（結果なし）
     task_plan = TaskPlan.create(message_id=uuid4(), tasks=[task])
 
-    result = await answer_service.execute(chat_session_with_messages, task_plan)
-
-    assert result.content == "回答"
-
-    # "完了したタスクがありません"というメッセージが含まれることを確認
-    call_args = mock_llm_client.generate.call_args
-    messages = call_args[0][0]
-    last_message = messages[-1]
-    assert "完了したタスクがありません" in last_message.content
+    with pytest.raises(AllTasksFailedError, match="全てのタスクが失敗しました"):
+        await answer_service.execute(chat_session_with_messages, task_plan)
 
 
 @pytest.mark.asyncio

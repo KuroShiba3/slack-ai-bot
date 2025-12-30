@@ -3,6 +3,11 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from src.domain.exception.task_exception import (
+    EmptyTaskDescriptionError,
+    TaskNotCompletedError,
+    TaskNotInProgressError,
+)
 from src.domain.model.general_answer_task_log import GeneralAnswerTaskLog
 from src.domain.model.task import AgentName, Task, TaskStatus
 from src.domain.model.web_search_task_log import SearchResult, WebSearchTaskLog
@@ -119,7 +124,7 @@ def test_complete_already_completed_task_raises_error():
     task = Task.create_web_search("検索タスク")
     task.complete("結果")
 
-    with pytest.raises(ValueError, match="実行中でないタスクは完了できません"):
+    with pytest.raises(TaskNotInProgressError, match="実行中でないタスクは完了できません"):
         task.complete("別の結果")
 
 
@@ -128,7 +133,7 @@ def test_complete_failed_task_raises_error():
     task = Task.create_web_search("検索タスク")
     task.fail("エラーが発生")
 
-    with pytest.raises(ValueError, match="実行中でないタスクは完了できません"):
+    with pytest.raises(TaskNotInProgressError, match="実行中でないタスクは完了できません"):
         task.complete("結果")
 
 
@@ -148,7 +153,7 @@ def test_update_result_on_in_progress_task_raises_error():
     """実行中のタスクの結果を更新しようとするとエラーになるテスト"""
     task = Task.create_web_search("検索タスク")
 
-    with pytest.raises(ValueError, match="完了していないタスクの結果は更新できません"):
+    with pytest.raises(TaskNotCompletedError, match="完了していないタスクの結果は更新できません"):
         task.update_result("新しい結果")
 
 
@@ -209,7 +214,7 @@ def test_reconstruct_task():
 
 def test_create_task_with_empty_description_raises_error():
     """空の説明でタスクを作成するとエラーになるテスト"""
-    with pytest.raises(ValueError, match="タスクの説明が空です"):
+    with pytest.raises(EmptyTaskDescriptionError, match="タスクの説明が空です"):
         Task(
             id=uuid4(),
             description="",
