@@ -52,14 +52,17 @@ class SlackRequestMapper:
     @staticmethod
     def to_application_input(slack_dto: SlackRequestDTO) -> AnswerToUserRequestInput:
         """SlackDTOをアプリケーション層のDTOに変換"""
+        thread_ts = slack_dto.thread_ts or slack_dto.message_ts
+        conversation_id = f"{slack_dto.channel_id}_{thread_ts}"
+
         return AnswerToUserRequestInput(
             user_message=slack_dto.text,
             context={
                 "user_id": slack_dto.user_id,
                 "channel_id": slack_dto.channel_id,
-                "thread_ts": slack_dto.thread_ts,
+                "thread_ts": thread_ts,
                 "message_ts": slack_dto.message_ts,
-                "conversation_id": f"{slack_dto.channel_id}_{slack_dto.thread_ts}",
+                "conversation_id": conversation_id,
             },
         )
 
