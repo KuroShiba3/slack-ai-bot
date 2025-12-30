@@ -4,6 +4,7 @@ from ..model import ChatSession, Message, TaskPlan
 
 class AnswerGenerationService:
     """タスク実行結果から最終回答を生成するサービス"""
+
     SYSTEM_PROMPT = """複数のタスクの実行結果を統合し、ユーザーの質問に対する包括的で分かりやすい回答を生成してください。
 
 # 回答のルール:
@@ -39,9 +40,6 @@ class AnswerGenerationService:
     async def execute(self, chat_session: ChatSession, task_plan: TaskPlan) -> Message:
         """タスク実行結果から最終回答を生成する"""
         latest_message = chat_session.last_user_message()
-        if not latest_message:
-            raise ValueError("最終回答を生成するにはユーザーメッセージが必要です")
-
         task_results_text = task_plan.format_task_results()
 
         human_prompt = self._build_human_prompt(
@@ -54,9 +52,9 @@ class AnswerGenerationService:
             Message.create_user_message(human_prompt),
         ]
 
-        answer_content = await self.llm_client.generate(messages)
+        answer = await self.llm_client.generate(messages)
 
-        return Message.create_assistant_message(answer_content)
+        return Message.create_assistant_message(answer)
 
     def _build_human_prompt(self, user_question: str, task_results: str) -> str:
         return f"""## ユーザーの質問:
