@@ -32,6 +32,16 @@ class FinalAnswerService:
     - 引用番号: [0], [1] のように角括弧で囲む
     - 同じURLは1つにまとめる
     - Slackリンク形式: `<URL|表示名>`
+
+# 出力形式（必ず以下の形式に従うこと）:
+
+```
+[最終的な回答の本文]
+
+*参考情報:*
+<URL1|タイトル1> [0]
+<URL2|タイトル2> [1]
+```
 """
 
     def __init__(self, llm_client: LLMClient):
