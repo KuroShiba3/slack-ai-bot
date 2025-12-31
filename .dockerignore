@@ -1,0 +1,145 @@
+# ===================================
+# .dockerignore
+# Dockerイメージに含めないファイル/ディレクトリ
+# ===================================
+
+# ===================================
+# Version Control
+# ===================================
+.git/
+.gitignore
+.gitattributes
+
+# ===================================
+# Documentation
+# ===================================
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+docs/
+*.md
+
+# ===================================
+# CI/CD
+# ===================================
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# ===================================
+# Development Files
+# ===================================
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Testing
+tests/
+htmlcov/
+.coverage
+coverage.xml
+.tox/
+.hypothesis/
+
+# ===================================
+# IDE & Editor Files
+# ===================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ===================================
+# Environment Files (本番用は別途マウント)
+# ===================================
+.env
+.env.*
+.env.sample
+!.env.production  # もし含める必要がある場合
+
+# ===================================
+# Logs & Temporary Files
+# ===================================
+logs/
+*.log
+*.pid
+*.tmp
+*.temp
+
+# ===================================
+# Docker Related
+# ===================================
+Dockerfile
+docker-compose*.yml
+.dockerignore
+*.dockerfile
+
+# ===================================
+# Database Development Files
+# ===================================
+postgres_data/
+pgdata/
+*.db
+*.sqlite
+*.sqlite3
+
+# ===================================
+# Cloud & Infrastructure
+# ===================================
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+
+# GCP
+gcp-key.json
+service-account-key.json
+
+# ===================================
+# Build Artifacts (開発時のビルド成果物)
+# ===================================
+dist/
+build/
+*.egg-info/
+
+# ===================================
+# Miscellaneous
+# ===================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Node (もし使用する場合)
+node_modules/
+npm-debug.log*
+
+# ===================================
+# Project Specific
+# ===================================
+# 開発用スクリプト
+scripts/dev/
+scripts/local/
+
+# サンプルデータ
+samples/
+fixtures/
