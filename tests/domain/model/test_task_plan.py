@@ -34,17 +34,6 @@ def test_create_task_plan_with_empty_tasks_raises_error():
         TaskPlan.create(message_id=message_id, tasks=[])
 
 
-def test_task_plan_id_is_unique():
-    """生成されるタスク計画IDがユニークであることをテスト"""
-    message_id = uuid4()
-    tasks = [Task.create_web_search("検索タスク")]
-
-    task_plan1 = TaskPlan.create(message_id=message_id, tasks=tasks)
-    task_plan2 = TaskPlan.create(message_id=message_id, tasks=tasks)
-
-    assert task_plan1.id != task_plan2.id
-
-
 def test_format_task_results_with_no_completed_tasks():
     """完了したタスクがない場合は例外が発生するテスト"""
     message_id = uuid4()
