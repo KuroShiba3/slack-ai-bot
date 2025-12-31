@@ -1,0 +1,101 @@
+<mxfile host="65bd71144e">
+    <diagram name="GCP Infrastructure" id="gcp-infrastructure">
+        <mxGraphModel dx="1226" dy="674" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="region1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce5cd;strokeColor=none;opacity=30;" vertex="1" parent="1">
+                    <mxGeometry x="89" y="390" width="319" height="251" as="geometry"/>
+                </mxCell>
+                <mxCell id="region2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9ead3;strokeColor=none;opacity=30;" vertex="1" parent="1">
+                    <mxGeometry x="880" y="374" width="280" height="266" as="geometry"/>
+                </mxCell>
+                <mxCell id="region_label1" value="asia-northeast-1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=13;fontColor=#666666;" vertex="1" parent="1">
+                    <mxGeometry x="109" y="414" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="region_label2" value="VPC Subnet" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=13;fontColor=#666666;" vertex="1" parent="1">
+                    <mxGeometry x="900" y="389" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="subnet_label" value="10.0.0.0/24" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#999999;" vertex="1" parent="1">
+                    <mxGeometry x="906" y="419" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="secret_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#dadce0;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="180" y="170" width="218" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="secret_label" value="Secret Manager" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontColor=#3c4043;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="212" y="190" width="198" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="github_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#dadce0;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="660" y="161" width="224" height="99" as="geometry"/>
+                </mxCell>
+                <mxCell id="github_icon" value="" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.weblogos.github;fillColor=#24292E;strokeColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="691" y="180" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="github_label" value="GitHub&lt;br&gt;Actions" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontColor=#3c4043;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="770" y="183" width="130" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="build_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#dadce0;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="149.5" y="474.75" width="162.5" height="90.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="build_label" value="Artifact Registry" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=17;fontColor=#3c4043;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="161" y="490" width="163" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="run_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#dadce0;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="486" y="463.5" width="229" height="113" as="geometry"/>
+                </mxCell>
+                <mxCell id="run_icon" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;fillColor=#4285F4;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.cloud_run;" vertex="1" parent="1">
+                    <mxGeometry x="516" y="496" width="60" height="48" as="geometry"/>
+                </mxCell>
+                <mxCell id="run_label" value="Cloud Run" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=17;fontColor=#3c4043;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="593" y="503" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="sql_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#dadce0;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="923" y="462" width="200" height="116" as="geometry"/>
+                </mxCell>
+                <mxCell id="sql_icon" value="" style="sketch=0;html=1;aspect=fixed;strokeColor=none;shadow=0;fillColor=#4285F4;verticalAlign=top;labelPosition=center;verticalLabelPosition=bottom;shape=mxgraph.gcp2.cloud_sql;" vertex="1" parent="1">
+                    <mxGeometry x="945" y="490" width="60" height="51" as="geometry"/>
+                </mxCell>
+                <mxCell id="sql_label" value="Cloud SQL" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=17;fontColor=#3c4043;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="1013" y="500.5" width="90" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;strokeColor=#4285F4;dashed=1;dashPattern=5 5;" edge="1" parent="1" source="secret_box" target="run_box">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="310" y="320"/>
+                            <mxPoint x="600" y="320"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arrow1_label" value="read credentials" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=13;fontColor=#5f6368;labelBackgroundColor=#ffffff;" connectable="0" vertex="1" parent="arrow1">
+                    <mxGeometry x="-0.1" relative="1" as="geometry">
+                        <mxPoint y="-10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;strokeColor=#5f6368;" edge="1" parent="1" source="github_box" target="build_box">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="790" y="340"/>
+                            <mxPoint x="240" y="340"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arrow2_label" value="CI/CD" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=13;fontColor=#5f6368;labelBackgroundColor=#ffffff;" connectable="0" vertex="1" parent="arrow2">
+                    <mxGeometry x="-0.1" relative="1" as="geometry">
+                        <mxPoint y="-10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;strokeColor=#5f6368;" edge="1" parent="1" source="build_box" target="run_box">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;endFill=1;strokeColor=#4285F4;" edge="1" parent="1" source="run_box" target="sql_box">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow4_label" value="VPC Egress" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#5f6368;labelBackgroundColor=#ffffff;" connectable="0" vertex="1" parent="arrow4">
+                    <mxGeometry x="-0.1" relative="1" as="geometry">
+                        <mxPoint y="-10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
