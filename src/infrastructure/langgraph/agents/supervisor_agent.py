@@ -4,7 +4,7 @@ from langgraph.types import Command, Send
 from src.infrastructure.exception.agent_exception import MissingStateError
 
 from ....domain.model import AgentName
-from ....domain.service import AnswerGenerationService, TaskPlanningService
+from ....domain.service import FinalAnswerService, TaskPlanningService
 from ....log import get_logger
 from ..graph.state import BaseState
 
@@ -15,10 +15,10 @@ class SupervisorAgent:
     def __init__(
         self,
         task_planning_service: TaskPlanningService,
-        answer_generation_service: AnswerGenerationService,
+        final_answer_service: FinalAnswerService,
     ):
         self.task_planning_service = task_planning_service
-        self.answer_generation_service = answer_generation_service
+        self.final_answer_service = final_answer_service
 
     async def plan_tasks(self, state: BaseState) -> Command:
         """タスク計画を生成し、各タスクを並列実行するノード"""
@@ -61,7 +61,7 @@ class SupervisorAgent:
             if not task_plan:
                 raise MissingStateError("task_plan")
 
-            answer_message = await self.answer_generation_service.execute(
+            answer_message = await self.final_answer_service.execute(
                 chat_session, task_plan
             )
 

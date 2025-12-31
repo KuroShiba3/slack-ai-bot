@@ -7,7 +7,7 @@ from src.infrastructure.exception.config_exception import MissingEnvironmentVari
 from ....config import GOOGLE_API_KEY, GOOGLE_CSE_ID
 from ....domain.model import ChatSession, WorkflowResult
 from ....domain.service import (
-    AnswerGenerationService,
+    FinalAnswerService,
     GeneralAnswerService,
     SearchQueryGenerationService,
     TaskPlanningService,
@@ -56,11 +56,11 @@ class LangGraphWorkflowService:
         search_query_service = SearchQueryGenerationService(gemini_2_0_flash_client)
         task_result_service = TaskResultGenerationService(gemini_2_0_flash_client)
         task_evaluation_service = TaskResultEvaluationService(gemini_2_5_flash_client)
-        answer_generation_service = AnswerGenerationService(gemini_2_5_flash_client)
+        final_answer_service = FinalAnswerService(gemini_2_5_flash_client)
 
         self.supervisor_agent = SupervisorAgent(
             task_planning_service=task_planning_service,
-            answer_generation_service=answer_generation_service,
+            final_answer_service=final_answer_service,
         )
 
         self.web_search_agent = WebSearchAgent(
