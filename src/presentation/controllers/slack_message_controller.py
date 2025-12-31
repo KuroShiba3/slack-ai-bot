@@ -57,6 +57,7 @@ class SlackMessageController:
 
             input_dto = self._mapper.to_application_input(slack_dto)
 
+            # ユースケース実行
             output_dto = await self._use_case.execute(input_dto)
 
             await self._slack_service.send_message(
