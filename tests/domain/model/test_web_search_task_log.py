@@ -5,7 +5,6 @@ from src.domain.exception.task_log_exception import (
     InvalidSearchResultsError,
 )
 from src.domain.model.web_search_task_log import (
-    SearchAttempt,
     SearchResult,
     WebSearchTaskLog,
 )
