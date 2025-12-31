@@ -163,38 +163,52 @@ class ChatSessionRepository:
                     )
                     messages.append(message)
 
+                # task_plansとtasksをJOINで一度に取得
                 async with conn.cursor() as cur:
                     await cur.execute(
                         """
-                        SELECT id, message_id, created_at
-                        FROM task_plans
-                        WHERE chat_session_id = %s
-                        ORDER BY created_at ASC
+                        SELECT
+                            tp.id as task_plan_id,
+                            tp.message_id,
+                            tp.created_at as task_plan_created_at,
+                            t.id as task_id,
+                            t.description,
+                            t.agent_name,
+                            t.status,
+                            t.result,
+                            t.task_log_json,
+                            t.created_at as task_created_at,
+                            t.completed_at
+                        FROM task_plans tp
+                        LEFT JOIN tasks t ON tp.id = t.task_plan_id
+                        WHERE tp.chat_session_id = %s
+                        ORDER BY tp.created_at ASC, t.created_at ASC
                         """,
                         (chat_session_id,),
                     )
-                    task_plan_rows = await cur.fetchall()
+                    rows = await cur.fetchall()
 
-                task_plans = []
-                for plan_row in task_plan_rows:
-                    async with conn.cursor() as cur:
-                        await cur.execute(
-                            """
-                            SELECT id, description, agent_name, status, result,
-                                task_log_json, created_at, completed_at
-                            FROM tasks
-                            WHERE task_plan_id = %s
-                            ORDER BY created_at ASC
-                            """,
-                            (plan_row["id"],),
-                        )
-                        task_rows = await cur.fetchall()
+                # task_plan_idごとにグループ化してTaskPlanを構築
+                from collections import defaultdict
 
-                    tasks = []
-                    for task_row in task_rows:
-                        agent_name = AgentName(task_row["agent_name"])
+                task_plans_dict = defaultdict(lambda: {"tasks": [], "info": None})
 
-                        log_data = task_row["task_log_json"]
+                for row in rows:
+                    plan_id = row["task_plan_id"]
+
+                    # TaskPlan情報を保存（初回のみ）
+                    if task_plans_dict[plan_id]["info"] is None:
+                        task_plans_dict[plan_id]["info"] = {
+                            "id": plan_id,
+                            "message_id": row["message_id"],
+                            "created_at": row["task_plan_created_at"],
+                        }
+
+                    # Taskを追加（task_idがNoneでない場合のみ）
+                    if row["task_id"] is not None:
+                        agent_name = AgentName(row["agent_name"])
+
+                        log_data = row["task_log_json"]
                         if isinstance(log_data, str):
                             log_data = json.loads(log_data)
 
@@ -207,21 +221,24 @@ class ChatSessionRepository:
                             raise ValueError(f"未知のagent_name: {agent_name}")
 
                         task = Task.reconstruct(
-                            id=task_row["id"],
-                            description=task_row["description"],
+                            id=row["task_id"],
+                            description=row["description"],
                             agent_name=agent_name,
                             task_log=task_log,
-                            status=TaskStatus(task_row["status"]),
-                            result=task_row["result"],
-                            created_at=task_row["created_at"],
-                            completed_at=task_row["completed_at"],
+                            status=TaskStatus(row["status"]),
+                            result=row["result"],
+                            created_at=row["task_created_at"],
+                            completed_at=row["completed_at"],
                         )
-                        tasks.append(task)
+                        task_plans_dict[plan_id]["tasks"].append(task)
 
+                # TaskPlanオブジェクトを構築
+                task_plans = []
+                for plan_data in task_plans_dict.values():
                     task_plan = TaskPlan(
-                        id=plan_row["id"],
-                        message_id=plan_row["message_id"],
-                        tasks=tasks,
+                        id=plan_data["info"]["id"],
+                        message_id=plan_data["info"]["message_id"],
+                        tasks=plan_data["tasks"],
                     )
                     task_plans.append(task_plan)
 
