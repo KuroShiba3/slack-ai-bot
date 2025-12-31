@@ -1,35 +1,35 @@
 module "network" {
     source = "../../modules/network"
-    project_id = local.project_id
-    region = local.region
-    environment = local.environment
-    service_name = local.service_name
+    project_id = var.project_id
+    region = var.region
+    environment = var.environment
+    service_name = var.service_name
 }
 
 module "secret_manager" {
     source = "../../modules/secret-manager"
-    region = local.region
-    environment = local.environment
-    service_account_email = local.service_account_email
+    region = var.region
+    environment = var.environment
+    service_account_email = var.service_account_email
 }
 
 module "repository" {
     source = "../../modules/repository"
-    project_id = local.project_id
-    region = local.region
-    repository_id = "${local.service_name}-${local.environment}"
+    project_id = var.project_id
+    region = var.region
+    repository_id = "${var.service_name}-${var.environment}"
 }
 
 module "cloudrun" {
     source = "../../modules/cloudrun"
-    project_id = local.project_id
-    region = local.region
-    environment = local.environment
-    service_name = local.service_name
-    service_account_email = local.service_account_email
+    project_id = var.project_id
+    region = var.region
+    environment = var.environment
+    service_name = var.service_name
+    service_account_email = var.service_account_email
     vpc_id = module.network.vpc_id
     subnet_id = module.network.subnet_id
-    image = "${local.region}-docker.pkg.dev/${local.project_id}/${module.repository.repository_id}/${local.service_name}:latest"
+    image = "${var.region}-docker.pkg.dev/${var.project_id}/${module.repository.repository_id}/${var.service_name}:latest"
     port = 8080
     memory = "2Gi"
     cpu = 1
@@ -45,10 +45,10 @@ module "cloudrun" {
 
 module "postgres" {
     source = "../../modules/postgres"
-    project_id = local.project_id
-    region = local.region
-    environment = local.environment
-    service_name = local.service_name
+    project_id = var.project_id
+    region = var.region
+    environment = var.environment
+    service_name = var.service_name
     vpc_id = module.network.vpc_id
     tier = "db-f1-micro"
     edition = "ENTERPRISE"
