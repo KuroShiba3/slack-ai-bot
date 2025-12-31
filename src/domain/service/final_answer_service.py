@@ -2,7 +2,7 @@ from ...domain.service.port import LLMClient
 from ..model import ChatSession, Message, TaskPlan
 
 
-class AnswerGenerationService:
+class FinalAnswerService:
     """タスク実行結果から最終回答を生成するサービス"""
 
     SYSTEM_PROMPT = """複数のタスクの実行結果を統合し、ユーザーの質問に対する包括的で分かりやすい回答を生成してください。

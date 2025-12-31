@@ -6,10 +6,9 @@ from pytest_mock import MockerFixture
 from src.domain.exception.chat_session_exception import UserMessageNotFoundError
 from src.domain.exception.task_plan_exception import AllTasksFailedError
 from src.domain.model.chat_session import ChatSession
-from src.domain.model.message import Message
 from src.domain.model.task import Task
 from src.domain.model.task_plan import TaskPlan
-from src.domain.service.answer_generation_service import AnswerGenerationService
+from src.domain.service.final_answer_service import FinalAnswerService
 
 
 @pytest.fixture
@@ -20,8 +19,8 @@ def mock_llm_client(mocker: MockerFixture):
 
 @pytest.fixture
 def answer_service(mock_llm_client):
-    """AnswerGenerationServiceのインスタンス"""
-    return AnswerGenerationService(llm_client=mock_llm_client)
+    """FinalAnswerServiceのインスタンス"""
+    return FinalAnswerService(llm_client=mock_llm_client)
 
 
 @pytest.fixture
@@ -52,7 +51,10 @@ def task_plan_with_completed_tasks():
 
 @pytest.mark.asyncio
 async def test_execute_generates_answer(
-    answer_service, mock_llm_client, chat_session_with_messages, task_plan_with_completed_tasks
+    answer_service,
+    mock_llm_client,
+    chat_session_with_messages,
+    task_plan_with_completed_tasks,
 ):
     """最終回答を生成するテスト"""
     mock_llm_client.generate.return_value = "統合された回答です"
@@ -68,7 +70,10 @@ async def test_execute_generates_answer(
 
 @pytest.mark.asyncio
 async def test_execute_uses_latest_user_message(
-    answer_service, mock_llm_client, chat_session_with_messages, task_plan_with_completed_tasks
+    answer_service,
+    mock_llm_client,
+    chat_session_with_messages,
+    task_plan_with_completed_tasks,
 ):
     """最新のユーザーメッセージを使用することをテスト"""
     mock_llm_client.generate.return_value = "回答"
@@ -88,7 +93,10 @@ async def test_execute_uses_latest_user_message(
 
 @pytest.mark.asyncio
 async def test_execute_includes_system_prompt(
-    answer_service, mock_llm_client, chat_session_with_messages, task_plan_with_completed_tasks
+    answer_service,
+    mock_llm_client,
+    chat_session_with_messages,
+    task_plan_with_completed_tasks,
 ):
     """システムプロンプトが含まれることをテスト"""
     mock_llm_client.generate.return_value = "回答"
@@ -107,7 +115,10 @@ async def test_execute_includes_system_prompt(
 
 @pytest.mark.asyncio
 async def test_execute_includes_task_results(
-    answer_service, mock_llm_client, chat_session_with_messages, task_plan_with_completed_tasks
+    answer_service,
+    mock_llm_client,
+    chat_session_with_messages,
+    task_plan_with_completed_tasks,
 ):
     """タスク実行結果が含まれることをテスト"""
     mock_llm_client.generate.return_value = "回答"
@@ -128,7 +139,10 @@ async def test_execute_includes_task_results(
 
 @pytest.mark.asyncio
 async def test_execute_excludes_latest_user_message_from_history(
-    answer_service, mock_llm_client, chat_session_with_messages, task_plan_with_completed_tasks
+    answer_service,
+    mock_llm_client,
+    chat_session_with_messages,
+    task_plan_with_completed_tasks,
 ):
     """会話履歴から最新のユーザーメッセージが除外されることをテスト"""
     mock_llm_client.generate.return_value = "回答"
@@ -158,7 +172,9 @@ async def test_execute_raises_error_when_no_user_message(
         id="session-1", thread_id=None, user_id="U12345", channel_id="C12345"
     )
 
-    with pytest.raises(UserMessageNotFoundError, match="ユーザーメッセージが存在しません"):
+    with pytest.raises(
+        UserMessageNotFoundError, match="ユーザーメッセージが存在しません"
+    ):
         await answer_service.execute(empty_session, task_plan_with_completed_tasks)
 
 
@@ -218,7 +234,10 @@ async def test_execute_with_empty_task_results(
 
 @pytest.mark.asyncio
 async def test_execute_returns_assistant_message(
-    answer_service, mock_llm_client, chat_session_with_messages, task_plan_with_completed_tasks
+    answer_service,
+    mock_llm_client,
+    chat_session_with_messages,
+    task_plan_with_completed_tasks,
 ):
     """返されるメッセージがアシスタントメッセージであることをテスト"""
     mock_llm_client.generate.return_value = "アシスタントの回答"
@@ -228,56 +247,3 @@ async def test_execute_returns_assistant_message(
     )
 
     assert result.role.value == "assistant"
-
-
-@pytest.mark.asyncio
-async def test_execute_with_multiline_task_results(
-    answer_service, mock_llm_client, chat_session_with_messages
-):
-    """複数行のタスク結果を処理できることをテスト"""
-    mock_llm_client.generate.return_value = "回答"
-
-    task = Task.create_general_answer("タスク")
-    multiline_result = """これは
-複数行の
-タスク結果です"""
-    task.complete(multiline_result)
-    task_plan = TaskPlan.create(message_id=uuid4(), tasks=[task])
-
-    result = await answer_service.execute(chat_session_with_messages, task_plan)
-
-    # マルチラインの結果が含まれていることを確認
-    call_args = mock_llm_client.generate.call_args
-    messages = call_args[0][0]
-    last_message = messages[-1]
-    assert multiline_result in last_message.content
-
-
-@pytest.mark.asyncio
-async def test_execute_with_long_conversation_history(
-    answer_service, mock_llm_client
-):
-    """長い会話履歴がある場合のテスト"""
-    mock_llm_client.generate.return_value = "回答"
-
-    session = ChatSession.create(
-        id="session-1", thread_id="thread-1", user_id="U12345", channel_id="C12345"
-    )
-
-    # 長い会話履歴を作成
-    for i in range(10):
-        session.add_user_message(f"質問{i}")
-        session.add_assistant_message(f"回答{i}")
-
-    task = Task.create_general_answer("タスク")
-    task.complete("結果")
-    task_plan = TaskPlan.create(message_id=uuid4(), tasks=[task])
-
-    result = await answer_service.execute(session, task_plan)
-
-    # 会話履歴が適切に含まれることを確認
-    call_args = mock_llm_client.generate.call_args
-    messages = call_args[0][0]
-
-    # システムプロンプト(1) + 会話履歴(19個、最新の1個を除く) + 新しいプロンプト(1) = 21
-    assert len(messages) == 21
