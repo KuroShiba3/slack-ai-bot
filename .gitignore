@@ -1,9 +1,10 @@
+# ===================================
+# Python
+# ===================================
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
 
 # Distribution / packaging
@@ -26,141 +27,141 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# PyInstaller
-*.manifest
-*.spec
+# ===================================
+# Virtual Environments & Package Managers
+# ===================================
+# uv (このプロジェクトで使用)
+.uv/
+!uv.lock  # lockファイルはコミット
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-.pybuilder/
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# poetry
-poetry.lock
-
-# pdm
-.pdm.toml
-
-# PEP 582
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
+# Python virtual environments
+.venv/
 venv/
+env/
 ENV/
 env.bak/
 venv.bak/
 
-# Spyder project settings
-.spyderproject
-.spyderproject
+# Other package managers
+.python-version
+Pipfile.lock
+poetry.lock
+.pdm.toml
+__pypackages__/
 
-# Rope project settings
-.ropeproject
+# ===================================
+# Testing & Coverage
+# ===================================
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+*.cover
+*.py,cover
+nosetests.xml
+cover/
 
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# uv
-uv.lock
-.uv/
-
-# IDEs
+# ===================================
+# IDEs & Editors
+# ===================================
+# VS Code
 .vscode/
+*.code-workspace
+
+# JetBrains (PyCharm, IntelliJ)
 .idea/
+*.iml
+
+# Vim
 *.swp
 *.swo
 *~
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
 
-# Docker
-*.pid
+# ===================================
+# Environment & Configuration
+# ===================================
+# 環境変数 (本番用は除外、サンプルは含む)
+.env
+.env.local
+.env.*.local
+!.env.sample
 
-# Slack
-.slack/
-
-# Logs
-logs/
-*.log
-
-# Local configuration
+# Local configuration files
 config.local.py
 settings.local.py
 
+# ===================================
+# Logs
+# ===================================
+logs/
+*.log
+*.pid
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===================================
+# Docker
+# ===================================
+# Docker volumeデータ
+postgres_data/
+pgdata/
+
+# ===================================
+# Database
+# ===================================
+*.db
+*.sqlite
+*.sqlite3
+db.sqlite3-journal
+
+# ===================================
+# Slack App Development
+# ===================================
+.slack/
+
+# ===================================
+# AI/LLM Related
+# ===================================
+# LangSmith cache
+.langsmith/
+
+# ===================================
+# Type Checkers & Linters
+# ===================================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# ===================================
+# Documentation
+# ===================================
+docs/_build/
+/site
+
+# ===================================
+# Temporary Files
+# ===================================
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# ===================================
+# Cloud & Infrastructure
+# ===================================
 # Terraform
 *.tfstate
 *.tfstate.*
@@ -173,3 +174,7 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+# GCP
+gcp-key.json
+service-account-key.json
