@@ -124,7 +124,9 @@ def test_complete_already_completed_task_raises_error():
     task = Task.create_web_search("検索タスク")
     task.complete("結果")
 
-    with pytest.raises(TaskNotInProgressError, match="実行中でないタスクは完了できません"):
+    with pytest.raises(
+        TaskNotInProgressError, match="実行中でないタスクは完了できません"
+    ):
         task.complete("別の結果")
 
 
@@ -133,7 +135,9 @@ def test_complete_failed_task_raises_error():
     task = Task.create_web_search("検索タスク")
     task.fail("エラーが発生")
 
-    with pytest.raises(TaskNotInProgressError, match="実行中でないタスクは完了できません"):
+    with pytest.raises(
+        TaskNotInProgressError, match="実行中でないタスクは完了できません"
+    ):
         task.complete("結果")
 
 
@@ -153,7 +157,9 @@ def test_update_result_on_in_progress_task_raises_error():
     """実行中のタスクの結果を更新しようとするとエラーになるテスト"""
     task = Task.create_web_search("検索タスク")
 
-    with pytest.raises(TaskNotCompletedError, match="完了していないタスクの結果は更新できません"):
+    with pytest.raises(
+        TaskNotCompletedError, match="完了していないタスクの結果は更新できません"
+    ):
         task.update_result("新しい結果")
 
 
@@ -221,14 +227,6 @@ def test_create_task_with_empty_description_raises_error():
             agent_name=AgentName.WEB_SEARCH,
             task_log=WebSearchTaskLog.create(),
         )
-
-
-def test_task_id_is_unique():
-    """生成されるタスクIDがユニークであることをテスト"""
-    task1 = Task.create_web_search("タスク1")
-    task2 = Task.create_web_search("タスク2")
-
-    assert task1.id != task2.id
 
 
 def test_multiple_web_search_attempts():

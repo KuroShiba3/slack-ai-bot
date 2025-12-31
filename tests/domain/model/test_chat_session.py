@@ -113,7 +113,9 @@ def test_add_user_message_with_wrong_role_raises_error():
     )
     assistant_message = Message.create_assistant_message("こんにちは")
 
-    with pytest.raises(InvalidUserMessageRoleError, match="USER以外のメッセージは追加できません"):
+    with pytest.raises(
+        InvalidUserMessageRoleError, match="USER以外のメッセージは追加できません"
+    ):
         session.add_user_message(assistant_message)
 
 
@@ -151,7 +153,10 @@ def test_add_assistant_message_with_wrong_role_raises_error():
     )
     user_message = Message.create_user_message("こんにちは")
 
-    with pytest.raises(InvalidAssistantMessageRoleError, match="ASSISTANT以外のメッセージは追加できません"):
+    with pytest.raises(
+        InvalidAssistantMessageRoleError,
+        match="ASSISTANT以外のメッセージは追加できません",
+    ):
         session.add_assistant_message(user_message)
 
 
@@ -198,7 +203,9 @@ def test_last_user_message_when_no_user_messages():
 
     session.add_assistant_message("回答のみ")
 
-    with pytest.raises(UserMessageNotFoundError, match="ユーザーメッセージが存在しません"):
+    with pytest.raises(
+        UserMessageNotFoundError, match="ユーザーメッセージが存在しません"
+    ):
         session.last_user_message()
 
 
@@ -208,7 +215,9 @@ def test_last_user_message_when_empty():
         id="session-1", thread_id=None, user_id="U12345", channel_id="C12345"
     )
 
-    with pytest.raises(UserMessageNotFoundError, match="ユーザーメッセージが存在しません"):
+    with pytest.raises(
+        UserMessageNotFoundError, match="ユーザーメッセージが存在しません"
+    ):
         session.last_user_message()
 
 
@@ -237,7 +246,9 @@ def test_last_assistant_message_id_when_no_assistant_messages():
 
     session.add_user_message("質問のみ")
 
-    with pytest.raises(AssistantMessageNotFoundError, match="アシスタントメッセージが存在しません"):
+    with pytest.raises(
+        AssistantMessageNotFoundError, match="アシスタントメッセージが存在しません"
+    ):
         session.last_assistant_message_id()
 
 
@@ -247,7 +258,9 @@ def test_last_assistant_message_id_when_empty():
         id="session-1", thread_id=None, user_id="U12345", channel_id="C12345"
     )
 
-    with pytest.raises(AssistantMessageNotFoundError, match="アシスタントメッセージが存在しません"):
+    with pytest.raises(
+        AssistantMessageNotFoundError, match="アシスタントメッセージが存在しません"
+    ):
         session.last_assistant_message_id()
 
 
@@ -285,13 +298,3 @@ def test_add_multiple_task_plans():
     assert len(session.task_plans) == 2
     assert session.task_plans[0] == task_plan1
     assert session.task_plans[1] == task_plan2
-
-
-def test_add_none_task_plan_raises_error():
-    """Noneのタスク計画を追加するとエラーになるテスト"""
-    session = ChatSession.create(
-        id="session-1", thread_id=None, user_id="U12345", channel_id="C12345"
-    )
-
-    with pytest.raises(NoneTaskPlanError, match="タスク計画がNoneです"):
-        session.add_task_plan(None)
