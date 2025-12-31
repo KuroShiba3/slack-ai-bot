@@ -43,7 +43,7 @@ class TaskPlan:
         return self._tasks
 
     def format_task_results(self) -> str:
-        """タスク結果のフォーマット (完了したタスクのみ)"""
+        """タスク結果のフォーマット"""
         task_results_parts = []
         for i, task in enumerate(self._tasks, 1):
             if task.status == TaskStatus.COMPLETED:
