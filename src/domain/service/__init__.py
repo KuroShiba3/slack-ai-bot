@@ -1,4 +1,4 @@
-from .answer_generation_service import AnswerGenerationService
+from .final_answer_service import FinalAnswerService
 from .general_answer_service import GeneralAnswerService
 from .search_query_generation_service import SearchQueryGenerationService
 from .task_plan_service import TaskPlanningService
@@ -7,7 +7,7 @@ from .task_result_generation_service import TaskResultGenerationService
 
 
 __all__ = [
-    "AnswerGenerationService",
+    "FinalAnswerService",
     "GeneralAnswerService",
     "SearchQueryGenerationService",
     "TaskPlanningService",
