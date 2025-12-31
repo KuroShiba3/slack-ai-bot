@@ -33,8 +33,10 @@ async def lifespan(app: FastAPI):
     await DatabasePool.initialize()
     logger.info("データベース接続プールの初期化が完了しました")
 
+    # Slackアダプターを初期化
     slack_adapter = SlackAdapter()
 
+    # DIコンテナを初期化
     container = DIContainer(slack_client=slack_adapter.app.client)
 
     # 依存関係を注入
@@ -83,7 +85,7 @@ async def setup_socket_mode():
         # Slackアダプターを初期化
         slack_adapter = SlackAdapter()
 
-        # DIコンテナを初期化(SlackクライアントをDIコンテナに渡す)
+        # DIコンテナを初期化
         container = DIContainer(slack_client=slack_adapter.app.client)
 
         # 依存関係を注入
