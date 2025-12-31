@@ -1,28 +1,20 @@
 from slack_sdk.web.async_client import AsyncWebClient
 
+from .application.usecase import FeedbackUseCase
 from .application.usecase.answer_to_user_request_usecase import (
     AnswerToUserRequestUseCase,
 )
-from .application.usecase import FeedbackUseCase
 from .config import GOOGLE_API_KEY
 from .infrastructure.external.llm import ModelFactory
 from .infrastructure.external.slack import SlackMessageService
 from .infrastructure.langgraph.graph import LangGraphWorkflowService
-from .infrastructure.repository import ChatSessionRepository
-from .infrastructure.repository import FeedbackRepository
-from .presentation.controllers import SlackMessageController
-from .presentation.controllers import SlackFeedbackController
+from .infrastructure.repository import ChatSessionRepository, FeedbackRepository
+from .presentation.controllers import SlackFeedbackController, SlackMessageController
 from .presentation.mapper import SlackRequestMapper
 
 
 class DIContainer:
-    """依存性注入コンテナ"""
-
     def __init__(self, slack_client: AsyncWebClient):
-        # 環境変数のチェック
-        if not GOOGLE_API_KEY:
-            raise ValueError("GOOGLE_API_KEY環境変数が設定されていません")
-
         # インフラストラクチャ層
         self._model_factory = ModelFactory(google_api_key=GOOGLE_API_KEY)
         self._slack_service = SlackMessageService(slack_client=slack_client)
