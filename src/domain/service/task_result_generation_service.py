@@ -103,9 +103,6 @@ class TaskResultGenerationService:
                 results_parts.append(f"\n**タイトル**: {result.title}")
                 results_parts.append(f"\n**URL**: {result.url}")
                 results_parts.append(f"\n**内容**:\n{result.content}\n")
-            results_parts.append(
-                "\n**【重要】URLを【参考情報】に含める場合は、一字一句完全にコピーしてください。**"
-            )
             search_results_section = "".join(results_parts)
 
         feedback_section = ""
